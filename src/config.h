@@ -356,7 +356,7 @@ tv8 v8[asv8]; \
 // float resolution = 3.3 / 1023;
 
 // GET https://api.thingspeak.com /update?api_key=K3CC6GPXNVQULRRX&field1=0&field1=0&field1=0
-const int updateThingSpeakInterval = 10000; //* 1000; // Time interval in milliseconds to update ThingSpeak (number of seconds * 1000 = interval)
+const int updateThingSpeakInterval = 5000; //* 1000; // Time interval in milliseconds to update ThingSpeak (number of seconds * 1000 = interval)
 
 /// Local php server
 
