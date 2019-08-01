@@ -22,7 +22,7 @@ MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 #ifdef USE_K_FILTER
 #include <SimpleKalmanFilter.h>
 
-SimpleKalmanFilter kFilter(5.0, 0.5, 0.01);
+SimpleKalmanFilter kFilter(0.05, 0.5, 0.01);
 #endif // USE_K_FILTER
  
 CircularBuffer<float, 400> buffer;

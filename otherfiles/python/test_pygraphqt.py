@@ -20,13 +20,13 @@ p2 = win.addPlot(row=1, col=0)
 
 curve1 = p1.plot()
 curve2 = p1.plot()
-curve1.setPen('b')
-curve2.setPen('r')
+curve1.setPen('r')
+curve2.setPen('g')
 
 curve3 = p2.plot()
 curve4 = p2.plot()
 curve3.setPen('r')
-curve4.setPen('b')
+curve4.setPen('g')
 
 #curve3 = p3.plot()
 
@@ -46,13 +46,14 @@ y4 = [] # np.zeros(0, dtype=float)
 # y4 = np.concatenate([y4,[readData[0]]])
 
 indx = -sample_cnt
+last_time_data =0 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((UDP_IP, UDP_PORT))
 
 
 def update():
-    global curve1, curve2, curve3, curve4, indx, x, y1, y2, y3, y4  # curve3,
+    global curve1, curve2, curve3, curve4, indx, x, y1, y2, y3, y4, last_time_data  # curve3,
 
     msg, client = sock.recvfrom(1024)
     data = msg[:-1]   
@@ -65,6 +66,16 @@ def update():
     # y2[indx] = (readData[3])
     # y3[indx] = (readData[4])
     # y4[indx] = (readData[5])
+    if int(readData[0]) < last_time_data :  
+        x = []
+        y1 = []
+        y2 = []
+        y3 = []
+        y4 = []
+
+
+
+    last_time_data = int(readData[0])
 
     if len(x) < sample_cnt:
 
