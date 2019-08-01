@@ -6,7 +6,11 @@ import pyqtgraph as pg
 
 import time
 import numpy as np
+import socket
 
+
+UDP_IP = "10.42.0.1"
+UDP_PORT = 12321
 
 app = QtGui.QApplication([])
 
@@ -16,8 +20,8 @@ p2 = win.addPlot(row=1, col=0)
 
 curve1 = p1.plot()
 curve2 = p1.plot()
-curve1.setPen('r')
-curve2.setPen('b')
+curve1.setPen('b')
+curve2.setPen('r')
 
 curve3 = p2.plot()
 curve4 = p2.plot()
@@ -26,36 +30,80 @@ curve4.setPen('b')
 
 #curve3 = p3.plot()
 
-readData = [0.0, 0.0, 0.0, 0.0, 0.0]
-x  = np.arange(1000)
-y1 = np.zeros(1000, dtype=float)
-y2 = np.zeros(1000, dtype=float)
-y3 = np.zeros(1000, dtype=float)
-y4 = np.zeros(1000, dtype=float)
+sample_cnt = 200
 
-indx = 0
+readData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+x  = [] # np.arange(0, dtype=float)
+y1 = [] # np.zeros(0, dtype=float)
+y2 = [] # np.zeros(0, dtype=float)
+y3 = [] # np.zeros(0, dtype=float)
+y4 = [] # np.zeros(0, dtype=float)
+
+# x = np.concatenate([x,[readData[0]]])
+# y1 = np.concatenate([y1,[readData[0]]])
+# y2 = np.concatenate([y2,[readData[0]]])
+# y3 = np.concatenate([y3,[readData[0]]])
+# y4 = np.concatenate([y4,[readData[0]]])
+
+indx = -sample_cnt
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind((UDP_IP, UDP_PORT))
 
 
 def update():
-    global curve1, curve2, curve3, curve4, indx, y1, y2, y3, y3  # curve3,
+    global curve1, curve2, curve3, curve4, indx, x, y1, y2, y3, y4  # curve3,
+
+    msg, client = sock.recvfrom(1024)
+    data = msg[:-1]   
+    readData=data.split(',')
 
     # function that reads data from the sensor it returns a list of 3 elements as the y-coordinates for the updating plots
-    readData = np.random.rand(5)
-    x[indx] = indx
-    y1[indx] = readData[0]
-    y2[indx] = readData[1]
-    y3[indx] = readData[2]
-    y4[indx] = readData[3]
+    #readData = np.random.rand(5)
+    # x[indx] = (readData[0]) 
+    # y1[indx] = (readData[2])
+    # y2[indx] = (readData[3])
+    # y3[indx] = (readData[4])
+    # y4[indx] = (readData[5])
 
-    if indx == 999:
+    if len(x) < sample_cnt:
+
+        # x = np.concatenate([x,[readData[0]]])
+        # y1 = np.concatenate([y1,[readData[2]]])
+        # y2 = np.concatenate([y2,[readData[3]]])
+        # y3 = np.concatenate([y3,[readData[4]]])
+        # y4 = np.concatenate([y4,[readData[5]]])
+        x.append(readData[0])
+        y1.append(readData[2])
+        y2.append(readData[3])
+        y3.append(readData[4])
+        y4.append(readData[5])
+    
+    else:
+        x[:-1] = x[1:]
+        y1[:-1] = y1[1:]
+        y2[:-1] = y2[1:]
+        y3[:-1] = y3[1:]
+        y4[:-1] = y4[1:]
+
+        x[-1] = readData[0]
+        y1[-1] = readData[2]
+        y2[-1] = readData[3]
+        y3[-1] = readData[4]
+        y4[-1] = readData[5]
+
+    if indx == sample_cnt-1:
         indx = 0  
         
     indx += 1
-    curve1.setData(x,y1)  # , symbolBrush=('b'))
-    curve2.setData(x,y2)  # , symbolBrush=('r'))
+    #print len(x),' ', len(y1) , ' ', x
+    curve1.setData(np.asarray(x).astype(np.float),np.asarray(y1).astype(np.float))  # , symbolBrush=('b'))
+    #curve1.setPos(indx,0)
+    curve2.setData(np.asarray(x).astype(np.float),np.asarray(y2).astype(np.float))  # , symbolBrush=('r'))
+    #curve2.setPos(indx,0)
 
-    curve3.setData(x,y3)  # , symbolBrush=('b'))
-    curve4.setData(x,y4)  # , symbolBrush=('r'))
+    curve3.setData(np.asarray(x).astype(np.float),np.asarray(y3).astype(np.float))  # , symbolBrush=('b'))
+    curve4.setData(np.asarray(x).astype(np.float),np.asarray(y4).astype(np.float))  # , symbolBrush=('r'))
     #curve3.setData(y3)
     app.processEvents()
 
