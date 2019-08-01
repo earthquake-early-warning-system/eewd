@@ -300,7 +300,7 @@ void loop()
     if (WiFi.status() == WL_CONNECTED)
     {
       sr++;
-      loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+      //loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
 
       sprintf(print_buffer, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
       Serial.println();

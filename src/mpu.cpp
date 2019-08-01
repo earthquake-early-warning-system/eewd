@@ -16,6 +16,15 @@ MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 
 #include <elapsedMillis.h>
 
+
+#define USE_K_FILTER
+
+#ifdef USE_K_FILTER
+#include <SimpleKalmanFilter.h>
+
+SimpleKalmanFilter kFilter(5.0, 0.5, 0.01);
+#endif // USE_K_FILTER
+ 
 CircularBuffer<float, 400> buffer;
 
 arduinoFFT FFT_mpu = arduinoFFT(); /* Create FFT object */
@@ -53,7 +62,7 @@ bool has_offset_calculate = false;
 int mpu_offset_sample_count = 0;
 float mpu_offset_samples[OFFSET_COUNT] = {0.0f};
 
-elapsedMillis elapsedTime;
+elapsedMillis elapsedTime, elapsed_time;
 
 void setup_mpu();
 void loop_mpu();
@@ -127,8 +136,14 @@ bool mpu_setup()
   for (int i = 0; i < samples_mpu; i++)
   {
     loop_mpu();
-    buffer.push(Am_mpu * mag_multiflier);
-    vReal_mpu[i % samples_mpu] = Am_mpu * mag_multiflier;
+    float am_ft 
+    #ifdef USE_K_FILTER
+    = kFilter.updateEstimate(Am_mpu * mag_multiflier);
+    #else
+    = Am_mpu * mag_multiflier;
+    #endif
+    buffer.push(am_ft);
+    vReal_mpu[i % samples_mpu] = am_ft;
     vImag_mpu[i % samples_mpu] = 0.0;
   }
 
@@ -150,8 +165,15 @@ void mpu_loop()
     timer_micros_mpu = micros();
     time_profile_mpu = micros();
     loop_mpu();
+    
+    float am_ft 
+    #ifdef USE_K_FILTER
+    = kFilter.updateEstimate(Am_mpu * mag_multiflier);
+    #else
+    = Am_mpu * mag_multiflier;
+    #endif
 
-    buffer.push(Am_mpu * mag_multiflier);
+    buffer.push(am_ft);
 
     //if(samples_mpu>acc_vreal_index_mpu)
     for (int i = 0; i < samples_mpu; i++)
@@ -174,8 +196,8 @@ void mpu_loop()
       //acc_vreal_index_mpu++;
     }
 
-    buffer.shift();
-
+    buffer.shift(); 
+    
     sr_mpu++;
     time_profile_mpu = micros() - time_profile_mpu;
     //}
@@ -189,9 +211,10 @@ void mpu_loop()
     double samplingFrequency = 1000000.0 / sampling_duration_us; // (double)dsr_mpu/((double)time_division/1000.0); // change to second
 
     //
-    FFT_mpu.DCRemoval();
+    
     FFT_mpu.Windowing(vReal_mpu, samples_mpu, FFT_WIN_TYP_FLT_TOP, FFT_FORWARD); /* Weigh data */
     FFT_mpu.Compute(vReal_mpu, vImag_mpu, samples_mpu, FFT_FORWARD); /* Compute FFT */
+    FFT_mpu.DCRemoval();
     FFT_mpu.ComplexToMagnitude(vReal_mpu, vImag_mpu, samples_mpu);   /* Compute magnitudes */
 
     double x;
@@ -250,9 +273,19 @@ void mpu_loop()
 
     acc_vreal_index_mpu = 0;
 
+
+    if(elapsed_time > 10 )//(1000/5) )
+    {
+      elapsed_time = 0;
+      sprintf(getPrintBuffer(), "%2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu);
+      sendGraphDate((char*)String(getJsonConfigListenerPtr()->getDeviceConfigPtr()->device_id[0]).c_str(), getPrintBuffer()); 
+    }    
+
     if (elapsedTime > 1000)
     {
 
+      //void sendGraphDate(char* _device_id, char *message) 
+      
       elapsedTime = 0;
       sprintf(print_buffer, "| MPU | dt %d smpl %2.4f %2.4f Hz %2.3f dB %2.1f", time_profile_mpu, samplingFrequency, valid_frequency_mpu, acc_fft_magnitude_mpu, temp_mpu);
       syslog_debug(print_buffer);

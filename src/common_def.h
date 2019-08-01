@@ -42,5 +42,6 @@ bool processConfig();
 void setDeviceMacStr();
 char * getDeviceMacStr();
 
+void sendGraphDate(char* _device_id, char *message);
 
 #endif //COMMON_DEF_H
