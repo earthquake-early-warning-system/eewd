@@ -25,10 +25,10 @@ MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 SimpleKalmanFilter kFilter(0.5, 0.5, 0.02);
 #endif // USE_K_FILTER
 
-#define ACCL_FILTER (5)
+#define ACCL_FILTER (4)
  
 const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
-const float mag_multiflier = 5000.0;//0000.0; // factor
+const float mag_multiflier = 1000.0;//0000.0; // factor
 
 CircularBuffer<double, 2 * samples_mpu> buffer;
 
@@ -277,7 +277,7 @@ void mpu_loop()
     acc_vreal_index_mpu = 0;
 
 
-    if(elapsed_time > (elapsedMillis)(sampling_duration_us/2.0) )//(1000/5) )
+    if(elapsed_time > (elapsedMillis)(sampling_duration_us/2000.0) )//(1000/5) )
     {
       elapsed_time = 0;
       sprintf(getPrintBuffer(), "%2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu);
