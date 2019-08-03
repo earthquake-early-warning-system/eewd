@@ -22,10 +22,12 @@ MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 #ifdef USE_K_FILTER
 #include <SimpleKalmanFilter.h>
 
-SimpleKalmanFilter kFilter(0.05, 0.5, 0.01);
+SimpleKalmanFilter kFilter(0.5, 0.5, 0.02);
 #endif // USE_K_FILTER
+
+#define ACCL_FILTER (6)
  
-CircularBuffer<float, 400> buffer;
+CircularBuffer<double, 400> buffer;
 
 arduinoFFT FFT_mpu = arduinoFFT(); /* Create FFT object */
 /*
@@ -33,7 +35,7 @@ These values can be changed in order to evaluate the functions
 */
 
 const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
-const float mag_multiflier = 10000.0; // factor
+const float mag_multiflier = 1000.0;//0000.0; // factor
 
 // This should be minimum just double of the max target frequency.
 // I chose 4 times
@@ -213,8 +215,9 @@ void mpu_loop()
     //
     
     FFT_mpu.Windowing(vReal_mpu, samples_mpu, FFT_WIN_TYP_FLT_TOP, FFT_FORWARD); /* Weigh data */
-    FFT_mpu.Compute(vReal_mpu, vImag_mpu, samples_mpu, FFT_FORWARD); /* Compute FFT */
     FFT_mpu.DCRemoval();
+    FFT_mpu.Compute(vReal_mpu, vImag_mpu, samples_mpu, FFT_FORWARD); /* Compute FFT */
+    
     FFT_mpu.ComplexToMagnitude(vReal_mpu, vImag_mpu, samples_mpu);   /* Compute magnitudes */
 
     double x;
@@ -363,6 +366,16 @@ void setup_mpu()
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0);    // set to zero (wakes up the MPU-6050)
+  Wire.endTransmission(true);
+
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x1c); // AFS_SEL register
+  Wire.write(0);    // set to zero (SETs to +/-2g the MPU-6050)
+  Wire.endTransmission(true);
+
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x1a); // DLPF_CFG register
+  Wire.write(ACCL_FILTER);    // set to a req filtered (SETs to  5Hz 19.0ms  the accel MPU-6050)
   Wire.endTransmission(true);
   //Serial.begin(9600);
 }
