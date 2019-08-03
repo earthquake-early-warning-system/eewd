@@ -28,7 +28,7 @@ SimpleKalmanFilter kFilter(0.5, 0.5, 0.02);
 #define ACCL_FILTER (4)
  
 const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
-const float mag_multiflier = 1000.0;//0000.0; // factor
+const float mag_multiflier = 10000.0;//0000.0; // factor
 
 CircularBuffer<double, 2 * samples_mpu> buffer;
 

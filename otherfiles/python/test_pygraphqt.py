@@ -12,14 +12,14 @@ import socket
 UDP_IP = "10.42.0.1"
 UDP_PORT = 12321
 
-app = QtGui.QApplication([])
+app = QtGui.QApplication(['eewd'])
 
 win = pg.GraphicsWindow() 
 p1 = win.addPlot(row=0, col=0) 
 p2 = win.addPlot(row=1, col=0)
 
-curve1 = p1.plot()
-curve2 = p1.plot()
+curve1 = p1.plot()#title="g")
+curve2 = p1.plot()#title="dB")
 curve1.setPen('r')
 curve2.setPen(color='g', width=3)
 
@@ -30,7 +30,7 @@ curve4.setPen('g')
 
 #curve3 = p3.plot()
 
-sample_cnt = 125
+sample_cnt = 150
 
 readData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 x  = [] # np.arange(0, dtype=float)
