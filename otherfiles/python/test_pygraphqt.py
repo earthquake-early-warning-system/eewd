@@ -30,7 +30,7 @@ curve4.setPen('g')
 
 #curve3 = p3.plot()
 
-sample_cnt = 150
+sample_cnt = 128
 
 readData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 x  = [] # np.arange(0, dtype=float)
