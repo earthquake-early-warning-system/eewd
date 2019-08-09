@@ -25,7 +25,7 @@ MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 SimpleKalmanFilter kFilter(0.5, 0.5, 0.02);
 #endif // USE_K_FILTER
 
-#define ACCL_FILTER (4)
+#define ACCL_FILTER (0)
  
 const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
 const float mag_multiflier = 10000.0;//0000.0; // factor
@@ -39,7 +39,7 @@ These values can be changed in order to evaluate the functions
 
 // This should be minimum just double of the max target frequency.
 // I chose 4 times
-const long sampling_duration_us = 80000;                      // Sampling frequency 1000s/80ms = 12.5Hz max estimatable freq
+const long sampling_duration_us = 20000;                      // Sampling frequency 1000s/80ms = 12.5Hz max estimatable freq
 const long number_of_samples_per_iteration = samples_mpu + 7; // + 7 is for error
 
 const long time_division = number_of_samples_per_iteration * sampling_duration_us / 1000; //ms // Total Sampling duration
