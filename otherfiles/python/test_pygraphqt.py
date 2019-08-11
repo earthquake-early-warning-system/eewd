@@ -25,20 +25,22 @@ curve2.setPen(color='g', width=3)
 
 curve3 = p2.plot()
 curve4 = p2.plot()
+curve5 = p2.plot()
 curve3.setPen('r')
 curve4.setPen('g')
+curve5.setPen('g', width=3)
 
 #curve3 = p3.plot()
 
 sample_cnt = 128
 
-readData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+readData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 x  = [] # np.arange(0, dtype=float)
 y1 = [] # np.zeros(0, dtype=float)
 y2 = [] # np.zeros(0, dtype=float)
 y3 = [] # np.zeros(0, dtype=float)
 y4 = [] # np.zeros(0, dtype=float)
-
+y5 = []
 # x = np.concatenate([x,[readData[0]]])
 # y1 = np.concatenate([y1,[readData[0]]])
 # y2 = np.concatenate([y2,[readData[0]]])
@@ -53,7 +55,7 @@ sock.bind((UDP_IP, UDP_PORT))
 
 
 def update():
-    global curve1, curve2, curve3, curve4, indx, x, y1, y2, y3, y4, last_time_data  # curve3,
+    global curve1, curve2, curve3, curve4, indx, x, y1, y2, y3, y4, y5, last_time_data  # curve3,
 
     msg, client = sock.recvfrom(1024)
     data = msg[:-1]   
@@ -72,6 +74,7 @@ def update():
         y2 = []
         y3 = []
         y4 = []
+        y5 = []
 
 
 
@@ -89,6 +92,8 @@ def update():
         y2.append(readData[3])
         y3.append(readData[4])
         y4.append(readData[5])
+        y5.append(readData[6])
+        
     
     else:
         x[:-1] = x[1:]
@@ -96,12 +101,14 @@ def update():
         y2[:-1] = y2[1:]
         y3[:-1] = y3[1:]
         y4[:-1] = y4[1:]
+        y5[:-1] = y5[1:]
 
         x[-1] = readData[0]
         y1[-1] = readData[2]
         y2[-1] = readData[3]
         y3[-1] = readData[4]
         y4[-1] = readData[5]
+        y5[-1] = readData[6]
 
     if indx == sample_cnt-1:
         indx = 0  
@@ -115,6 +122,7 @@ def update():
 
     curve3.setData(np.asarray(x).astype(np.float),np.asarray(y3).astype(np.float))  # , symbolBrush=('b'))
     curve4.setData(np.asarray(x).astype(np.float),np.asarray(y4).astype(np.float))  # , symbolBrush=('r'))
+    curve5.setData(np.asarray(x).astype(np.float),np.asarray(y5).astype(np.float))
     #curve3.setData(y3)
     app.processEvents()
 

@@ -2,9 +2,6 @@
 
 #include <Wire.h>
 
-#include <MedianFilter.h>
-MedianFilter samples_acc_mpu(3, 0);      // devide by 10000 as targetting 0.100
-MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 
 #include "arduinoFFT.h"
 
@@ -29,6 +26,13 @@ SimpleKalmanFilter kFilter(0.5, 0.5, 0.02);
  
 const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
 const float mag_multiflier = 10000.0;//0000.0; // factor
+
+#include <MedianFilter.h>
+MedianFilter samples_acc_mpu(5, 0);      // devide by 10000 as targetting 0.100
+MedianFilter samples_acc_mpu_fltr(255, 0);      // devide by 10000 as targetting 0.100
+
+MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
+
 
 CircularBuffer<double, 2 * samples_mpu> buffer;
 
@@ -69,7 +73,7 @@ elapsedMillis elapsedTime, elapsed_time;
 void setup_mpu();
 void loop_mpu();
 
-float Am_mpu = 0.0, temp_mpu = 0.0, acc_fft_magnitude_mpu = 0.0, acc_fft_magnitude_filtered_mpu = 0.0, temp_filtered_mpu = 0.0;
+float Am_mpu = 0.0, temp_mpu = 0.0, acc_fft_magnitude_mpu = 0.0, acc_fft_magnitude_filtered_mpu = 0.0, acc_fft_magnitude_double_filtered_mpu = 0.0, temp_filtered_mpu = 0.0;
 
 float mpu_getAccelMag()
 {
@@ -106,6 +110,11 @@ float mpu_getAccelFftMagFiltered()
 {
   return acc_fft_magnitude_filtered_mpu;
 }
+
+float mpu_getAccelTwiceFftMagFiltered()
+{
+  return acc_fft_magnitude_double_filtered_mpu;
+} 
 
 float mpu_getTemp()
 {
@@ -234,7 +243,10 @@ void mpu_loop()
     acc_fft_magnitude_mpu = acc_fft_magnitude_mpu < 0 ? acc_fft_magnitude_mpu * -1.0 : acc_fft_magnitude_mpu;
 
     acc_fft_magnitude_filtered_mpu = samples_acc_mpu.in((int)((float)acc_fft_magnitude_mpu * mag_multiflier)); // already x1000 for magnitude
+    acc_fft_magnitude_double_filtered_mpu = samples_acc_mpu_fltr.in(acc_fft_magnitude_filtered_mpu);
+    acc_fft_magnitude_double_filtered_mpu = samples_acc_mpu_fltr.getMax();
     acc_fft_magnitude_filtered_mpu = acc_fft_magnitude_filtered_mpu / mag_multiflier;
+    acc_fft_magnitude_double_filtered_mpu = acc_fft_magnitude_double_filtered_mpu / mag_multiflier;
 
     if (has_offset_calculate == false)
     {
@@ -280,7 +292,7 @@ void mpu_loop()
     if(elapsed_time > (elapsedMillis)(sampling_duration_us/2000.0) )//(1000/5) )
     {
       elapsed_time = 0;
-      sprintf(getPrintBuffer(), "%2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu);
+      sprintf(getPrintBuffer(), "%2.4f, %2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu, acc_fft_magnitude_double_filtered_mpu);
       sendGraphDate((char*)String(getJsonConfigListenerPtr()->getDeviceConfigPtr()->device_id[0]).c_str(), getPrintBuffer()); 
     }    
 

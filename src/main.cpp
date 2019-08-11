@@ -238,7 +238,7 @@ void loop()
   temp = mpu_getTemp();
   acc = mpu_getAccelFftMag();
   temp_filtered = mpu_getTempFiltered();
-  acc_filtered = mpu_getAccelFftMagFiltered();
+  acc_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
 #endif
 
 #if (CURRENT_SUB_DEVICE == ENABLED)
@@ -300,7 +300,7 @@ void loop()
     if (WiFi.status() == WL_CONNECTED)
     {
       sr++;
-      //loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+      loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
 
       sprintf(print_buffer, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
       Serial.println();
