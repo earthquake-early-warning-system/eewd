@@ -15,6 +15,7 @@ bool mpu_setup();
 float mpu_getTempFiltered();
 float mpu_getTemp();
 float mpu_getAccelFftMagFiltered();
+float mpu_getAccelTwiceFftMagFiltered();
 float mpu_getAccelFftMag();
 void mpu_resetSampleTimer();
 
@@ -42,5 +43,6 @@ bool processConfig();
 void setDeviceMacStr();
 char * getDeviceMacStr();
 
+void sendGraphDate(char* _device_id, char *message);
 
 #endif //COMMON_DEF_H

@@ -238,7 +238,7 @@ void loop()
   temp = mpu_getTemp();
   acc = mpu_getAccelFftMag();
   temp_filtered = mpu_getTempFiltered();
-  acc_filtered = mpu_getAccelFftMagFiltered();
+  acc_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
 #endif
 
 #if (CURRENT_SUB_DEVICE == ENABLED)

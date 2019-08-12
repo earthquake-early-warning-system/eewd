@@ -2,9 +2,6 @@
 
 #include <Wire.h>
 
-#include <MedianFilter.h>
-MedianFilter samples_acc_mpu(3, 0);      // devide by 10000 as targetting 0.100
-MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 
 #include "arduinoFFT.h"
 
@@ -16,19 +13,37 @@ MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
 
 #include <elapsedMillis.h>
 
-CircularBuffer<float, 400> buffer;
+
+//#define USE_K_FILTER
+
+#ifdef USE_K_FILTER
+#include <SimpleKalmanFilter.h>
+
+SimpleKalmanFilter kFilter(0.5, 0.5, 0.02);
+#endif // USE_K_FILTER
+
+#define ACCL_FILTER (0)
+ 
+const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
+const float mag_multiflier = 10000.0;//0000.0; // factor
+
+#include <MedianFilter.h>
+MedianFilter samples_acc_mpu(5, 0);      // devide by 10000 as targetting 0.100
+MedianFilter samples_acc_mpu_fltr(255, 0);      // devide by 10000 as targetting 0.100
+
+MedianFilter samples_temp_mpu(3, 25000); // devide by 100 as targetting 35.0
+
+
+CircularBuffer<double, 2 * samples_mpu> buffer;
 
 arduinoFFT FFT_mpu = arduinoFFT(); /* Create FFT object */
 /*
 These values can be changed in order to evaluate the functions
 */
 
-const uint16_t samples_mpu = 32;      //This value MUST ALWAYS be a power of 2
-const float mag_multiflier = 10000.0; // factor
-
 // This should be minimum just double of the max target frequency.
 // I chose 4 times
-const long sampling_duration_us = 80000;                      // Sampling frequency 1000s/80ms = 12.5Hz max estimatable freq
+const long sampling_duration_us = 20000;                      // Sampling frequency 1000s/80ms = 12.5Hz max estimatable freq
 const long number_of_samples_per_iteration = samples_mpu + 7; // + 7 is for error
 
 const long time_division = number_of_samples_per_iteration * sampling_duration_us / 1000; //ms // Total Sampling duration
@@ -53,12 +68,12 @@ bool has_offset_calculate = false;
 int mpu_offset_sample_count = 0;
 float mpu_offset_samples[OFFSET_COUNT] = {0.0f};
 
-elapsedMillis elapsedTime;
+elapsedMillis elapsedTime, elapsed_time;
 
 void setup_mpu();
 void loop_mpu();
 
-float Am_mpu = 0.0, temp_mpu = 0.0, acc_fft_magnitude_mpu = 0.0, acc_fft_magnitude_filtered_mpu = 0.0, temp_filtered_mpu = 0.0;
+float Am_mpu = 0.0, temp_mpu = 0.0, acc_fft_magnitude_mpu = 0.0, acc_fft_magnitude_filtered_mpu = 0.0, acc_fft_magnitude_double_filtered_mpu = 0.0, temp_filtered_mpu = 0.0;
 
 float mpu_getAccelMag()
 {
@@ -96,6 +111,11 @@ float mpu_getAccelFftMagFiltered()
   return acc_fft_magnitude_filtered_mpu;
 }
 
+float mpu_getAccelTwiceFftMagFiltered()
+{
+  return acc_fft_magnitude_double_filtered_mpu;
+} 
+
 float mpu_getTemp()
 {
   return temp_mpu;
@@ -127,8 +147,14 @@ bool mpu_setup()
   for (int i = 0; i < samples_mpu; i++)
   {
     loop_mpu();
-    buffer.push(Am_mpu * mag_multiflier);
-    vReal_mpu[i % samples_mpu] = Am_mpu * mag_multiflier;
+    float am_ft 
+    #ifdef USE_K_FILTER
+    = kFilter.updateEstimate(Am_mpu * mag_multiflier);
+    #else
+    = Am_mpu * mag_multiflier;
+    #endif
+    buffer.push(am_ft);
+    vReal_mpu[i % samples_mpu] = am_ft;
     vImag_mpu[i % samples_mpu] = 0.0;
   }
 
@@ -150,8 +176,15 @@ void mpu_loop()
     timer_micros_mpu = micros();
     time_profile_mpu = micros();
     loop_mpu();
+    
+    float am_ft 
+    #ifdef USE_K_FILTER
+    = kFilter.updateEstimate(Am_mpu * mag_multiflier);
+    #else
+    = Am_mpu * mag_multiflier;
+    #endif
 
-    buffer.push(Am_mpu * mag_multiflier);
+    buffer.push(am_ft);
 
     //if(samples_mpu>acc_vreal_index_mpu)
     for (int i = 0; i < samples_mpu; i++)
@@ -174,8 +207,8 @@ void mpu_loop()
       //acc_vreal_index_mpu++;
     }
 
-    buffer.shift();
-
+    buffer.shift(); 
+    
     sr_mpu++;
     time_profile_mpu = micros() - time_profile_mpu;
     //}
@@ -189,9 +222,11 @@ void mpu_loop()
     double samplingFrequency = 1000000.0 / sampling_duration_us; // (double)dsr_mpu/((double)time_division/1000.0); // change to second
 
     //
-    FFT_mpu.DCRemoval();
+    
     FFT_mpu.Windowing(vReal_mpu, samples_mpu, FFT_WIN_TYP_FLT_TOP, FFT_FORWARD); /* Weigh data */
+    FFT_mpu.DCRemoval();
     FFT_mpu.Compute(vReal_mpu, vImag_mpu, samples_mpu, FFT_FORWARD); /* Compute FFT */
+    
     FFT_mpu.ComplexToMagnitude(vReal_mpu, vImag_mpu, samples_mpu);   /* Compute magnitudes */
 
     double x;
@@ -208,7 +243,10 @@ void mpu_loop()
     acc_fft_magnitude_mpu = acc_fft_magnitude_mpu < 0 ? acc_fft_magnitude_mpu * -1.0 : acc_fft_magnitude_mpu;
 
     acc_fft_magnitude_filtered_mpu = samples_acc_mpu.in((int)((float)acc_fft_magnitude_mpu * mag_multiflier)); // already x1000 for magnitude
+    acc_fft_magnitude_double_filtered_mpu = samples_acc_mpu_fltr.in(acc_fft_magnitude_filtered_mpu);
+    acc_fft_magnitude_double_filtered_mpu = samples_acc_mpu_fltr.getMax();
     acc_fft_magnitude_filtered_mpu = acc_fft_magnitude_filtered_mpu / mag_multiflier;
+    acc_fft_magnitude_double_filtered_mpu = acc_fft_magnitude_double_filtered_mpu / mag_multiflier;
 
     if (has_offset_calculate == false)
     {
@@ -250,9 +288,19 @@ void mpu_loop()
 
     acc_vreal_index_mpu = 0;
 
+
+    if(elapsed_time > (elapsedMillis)(sampling_duration_us/2000.0) )//(1000/5) )
+    {
+      elapsed_time = 0;
+      sprintf(getPrintBuffer(), "%2.4f, %2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu, acc_fft_magnitude_double_filtered_mpu);
+      sendGraphDate((char*)String(getJsonConfigListenerPtr()->getDeviceConfigPtr()->device_id[0]).c_str(), getPrintBuffer()); 
+    }    
+
     if (elapsedTime > 1000)
     {
 
+      //void sendGraphDate(char* _device_id, char *message) 
+      
       elapsedTime = 0;
       sprintf(print_buffer, "| MPU | dt %d smpl %2.4f %2.4f Hz %2.3f dB %2.1f", time_profile_mpu, samplingFrequency, valid_frequency_mpu, acc_fft_magnitude_mpu, temp_mpu);
       syslog_debug(print_buffer);
@@ -330,6 +378,16 @@ void setup_mpu()
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0);    // set to zero (wakes up the MPU-6050)
+  Wire.endTransmission(true);
+
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x1c); // AFS_SEL register
+  Wire.write(0);    // set to zero (SETs to +/-2g the MPU-6050)
+  Wire.endTransmission(true);
+
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x1a); // DLPF_CFG register
+  Wire.write(ACCL_FILTER);    // set to a req filtered (SETs to  5Hz 19.0ms  the accel MPU-6050)
   Wire.endTransmission(true);
   //Serial.begin(9600);
 }
