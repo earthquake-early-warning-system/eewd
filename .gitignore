@@ -680,3 +680,7 @@ otherfiles/iot_logger_php_server/tbl_marks.sql
 .pio/build/esp01/libb4b/RemoteDebug_ID1266/utility/libb64/cdecode.c.o
 .pio/build/esp01/libb4b/RemoteDebug_ID1266/utility/libsha1/libsha1.c.o
 .pio/build/esp01/libff5/libelapsedMillis.a
+.pio/build/esp01/lib791/libcircularBuffer.a
+.pio/build/esp01/src/mpu_graph.cpp.o
+.pio/build/esp01/libbc5/libkalmanFilter.a
+.pio/build/esp01/libbc5/kalmanFilter/SimpleKalmanFilter.cpp.o
