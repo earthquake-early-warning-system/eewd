@@ -52,13 +52,33 @@
 
 <body>
     <div id='form_place' align="center">
-    <h2>Register a new devices</h2>
+    <?php
+              if(!empty($gpUserData))
+                {
+                    $gpUserData['oauth_uid']  = !empty($gpUserProfile['id'])?$gpUserProfile['id']:'';
+                    $gpUserData['first_name'] = !empty($gpUserProfile['given_name'])?$gpUserProfile['given_name']:'';
+                    $gpUserData['last_name']  = !empty($gpUserProfile['family_name'])?$gpUserProfile['family_name']:'';
+                    $gpUserData['email'] = !empty($gpUserProfile['email'])?$gpUserProfile['email']:'';
+                    $gpUserData['picture']    = !empty($gpUserProfile['picture'])?$gpUserProfile['picture']:'';
+
+                }
+
+                echo "<h2>Register a new devices for ".$gpUserData['first_name']." ".$gpUserData['last_name']. "</h2>";
+
+    ?>
+    
     <h3><font color='red'>Device once registered can not be modified ever.</font></h3>
+
         
         <form action="" method="POST" enctype="multipart/form-data">
 
             <div style="display: inline-block; text-align: left;">
-                <label for="MAC_ID">MAC ID</label>
+           
+                <label for="email_address">Email </label>
+                <?php
+                echo "<input id='email_address' name='email_address' type='email' value=".$gpUserData['email']." autocomplete='off'>";
+                ?>
+                <br><label for="MAC_ID">MAC ID</label>
                 <input id="MAC_ID" name="MAC_ID" type="text" maxlength="12" value="000000000000" autocomplete="off">
                 Enter only alpaneumerals. No symboles. <br><font color='red'>Make sure you are aware of the device mac id</font><br>
                 <br><label for="GPS">GPS </label><input id="GPS" name="GPS" type="text" maxlength="17" value="000.0000,000.0000" autocomplete="off">
