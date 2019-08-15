@@ -684,3 +684,5 @@ otherfiles/iot_logger_php_server/tbl_marks.sql
 .pio/build/esp01/src/mpu_graph.cpp.o
 .pio/build/esp01/libbc5/libkalmanFilter.a
 .pio/build/esp01/libbc5/kalmanFilter/SimpleKalmanFilter.cpp.o
+otherfiles/iot_logger_php_server/google_auth/composer.lock
+otherfiles/iot_logger_php_server/google_auth/vendor
