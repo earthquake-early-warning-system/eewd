@@ -45,4 +45,9 @@ char * getDeviceMacStr();
 
 void sendGraphDate(char* _device_id, char *message);
 
+void notifier_ledNotifierSetup();
+void notifier_setNotifierState(NOTIFIER_STATES _state);
+void notifier_ledNotifierLoop();
+
+
 #endif //COMMON_DEF_H

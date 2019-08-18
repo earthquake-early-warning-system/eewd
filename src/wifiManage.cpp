@@ -11,6 +11,8 @@
 #include "common_def.h"
 
 void wifimanager_setup() {
+  notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_OFFLINE_MODE);
+
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println();
@@ -34,13 +36,19 @@ void wifimanager_setup() {
   pass.replace(":", "");
 
   String ssid = "EEWD_" + pass;
+
+  notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONFIG);
   
   if (!wifiManager.autoConnect(ssid.c_str(), pass.c_str())){//"AutoConnectAP", "password")) {
+      notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONN_FAILED);
+
     Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
     ESP.reset();
     delay(5000);
   }
+
+  notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
 
   //if you get here you have connected to the WiFi
   Serial.println("connected...yeey :)");

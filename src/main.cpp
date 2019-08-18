@@ -76,6 +76,7 @@ void checkResetCause()
 void setup()
 {
   Serial.begin(115200);
+  notifier_ledNotifierSetup();
 
   //WiFi.disconnect();
   //delay(10);
@@ -86,7 +87,9 @@ void setup()
   Serial.println();
   Serial.println();
   Serial.print("Connecting to configured wifi...");
-  syslog_info("Connecting to configured wifi...");
+  syslog_info("Connecting to configured wifi..."); 
+
+  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
 
   wifimanager_setup();
  
@@ -170,6 +173,9 @@ unsigned long sr, ts_acc;
 
 void loop()
 {
+   
+  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_PING);
+  notifier_ledNotifierLoop();
 
   unsigned long ts = millis(), dt_acc, dt_loop = micros();
 
@@ -202,11 +208,15 @@ void loop()
 
   if(is_safe_mode_active==true)
   {
+
     return;
   }
 
   if(has_config_received == false)
   {
+      
+      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
       sprintf(getPrintBuffer(), "No device config found. Synching...");
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
@@ -249,6 +259,25 @@ void loop()
   Irms_filtered = Irms_getFilteredCurr();
 #endif
 
+  //processConfig();
+
+  ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+
+  Device_config *config = config_lstnr->getDeviceConfigPtr(); 
+
+  if(acc_filtered < config->sensor_vibration_threshold_normal[0] )
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
+  }
+
+  if( (acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0] ) ) 
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
+  }
+
+  notifier_ledNotifierLoop();
+
+
   // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered
 
   ts = millis() - ts;
@@ -260,17 +289,17 @@ void loop()
   //   Serial.printf("* loop dt %d  uptm %d(VERBOSE)\n", dt_loop, millis());
   // }
 
-  if (true == whether_post_wifi_connect_setup_done)
-  {
-    if (checkTelnetTime >= updateTelnetInterval)
-    {
-      checkTelnetTime = 0;
-      //last_time_telnet_talked = millis();
-      sprintf_P(print_buffer, "* %f (%f) A, %f (%f) dC, %f (%f) G(VERBOSE)\n", Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered);
-      //DEBUG_V(print_buffer);//"* %f (%f) A, %f (%f) dC, %f (%f) G(VERBOSE)\n", Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered);
-      //syslog_debug(print_buffer);
-    }
-  }
+  // if (true == whether_post_wifi_connect_setup_done)
+  // {
+  //   if (checkTelnetTime >= updateTelnetInterval)
+  //   {
+  //     checkTelnetTime = 0;
+  //     //last_time_telnet_talked = millis();
+  //     sprintf_P(print_buffer, "* %f (%f) A, %f (%f) dC, %f (%f) G(VERBOSE)\n", Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered);
+  //     //DEBUG_V(print_buffer);//"* %f (%f) A, %f (%f) dC, %f (%f) G(VERBOSE)\n", Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered);
+  //     //syslog_debug(print_buffer);
+  //   }
+  // }
   if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
   {
     checkThingSpeakTime = 0;
@@ -282,11 +311,14 @@ void loop()
     long time_wifi_check = millis();
     while (WiFi.status() != WL_CONNECTED)
     {
+      notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONN_FAILED);
+
       Serial.print(".");
       delay(250);
 
       if (millis() - time_wifi_check > 60000)
       {
+        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
         Serial.println("Resetting the device as not connecting to configured wifi settings...");
         delay(2000);
         Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
@@ -299,6 +331,8 @@ void loop()
 
     if (WiFi.status() == WL_CONNECTED)
     {
+      notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
+
       sr++;
       loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
 

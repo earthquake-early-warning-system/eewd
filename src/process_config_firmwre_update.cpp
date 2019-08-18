@@ -10,16 +10,16 @@
 
 //Device_config * config;
 
-void ledFirmwareUpgradeProcess(int _started_or_stopped)
+void ledFirmwareUpgradeProcess(int _started)
 {
 
-    if(1==_started_or_stopped) // FIRMWARE_UPDATE_STARTED / In_Progress
+    if(1==_started) // FIRMWARE_UPDATE_STARTED / In_Progress
     {
-
+        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_REMOTE_CODE_BURN_STARTED);
     }
 
     
-    if(0==_started_or_stopped) // FIRMWARE_UPDATE_STOPPED
+    if(0==_started) // FIRMWARE_UPDATE_STOPPED
     {
 
     }
@@ -41,8 +41,12 @@ bool updateFirmware(char*_version_firmware)
 
     unsigned long time_spent_to_update = millis();
 
+    ledFirmwareUpgradeProcess(1);
+
     t_httpUpdate_return ret = (t_httpUpdate_return)ESPhttpUpdate.update(
         php_upgrade_server, php_upgrade_server_port, path_to_firmware, _VER_);
+
+    ledFirmwareUpgradeProcess(0);
 
     time_spent_to_update = millis() - time_spent_to_update;
 
@@ -104,7 +108,7 @@ bool processConfig()
     {
         status = updateCodeUpdateStatus();
     }
-
+ 
     // check others
     // e.g. buzzer and leds
 

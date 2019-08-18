@@ -257,8 +257,12 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
     long total_time_taken = 0;
     long ts_wait_for_client = millis();
     http_wificlient.setTimeout(1000);
+    notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_CONNECTING);
+
     if (!http_wificlient.connect(_php_server, _php_server_port))
     {
+        notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_CONN_FAILED);
+
         sprintf(print_buffer, "connection failed");
         Serial.println();
         Serial.println(print_buffer);
@@ -267,6 +271,9 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
         status = false;
         return status;
     }
+
+    notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_CONNECTED);
+
 
     //Serial.print("'connect' time taken ");
     total_time_taken = millis() - ts_wait_for_client;
@@ -282,6 +289,8 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
     String getStr = "GET " + String(_php_server_file_target) + data_str + " HTTP/1.1\r\nHost: " + String(_php_server) + "\r\n\r\n";
 
     // Send request to the server:
+    notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_DATA_SENDING);
+
     http_wificlient.print(getStr);
 
     sprintf(print_buffer, "http msg %s", getStr.c_str());
@@ -298,6 +307,9 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
     //Serial.print("'send' time taken ");
     total_time_taken += millis() - ts_wait_for_client;
     //Serial.println(millis() - ts_wait_for_client);
+
+    notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_DATA_SENT);
+
 
     sprintf(print_buffer, "'send' time taken %d ms", millis() - ts_wait_for_client);
     //Serial.println();
@@ -333,10 +345,14 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
     const char *status_ptr = (const char *)status_str;
     http_wificlient.setTimeout(1500);
 
-    http_wificlient.readBytesUntil('\r', status_str, sizeof(status_str));
+    http_wificlient.readBytesUntil('\r', status_str, sizeof(status_str)); 
+
+    //notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_DATA_SENT_RESPONDED);
+ 
     // It should be "HTTP/1.0 200 OK" or "HTTP/1.1 200 OK"
     if (strcmp(status_ptr + 9, "200 OK") != 0)
     {
+        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
         status = false;
         sprintf(print_buffer, "Unexpected response: %s", status_str);
         //Serial.print(F("Unexpected response: "));
@@ -344,6 +360,7 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
         syslog_warn(print_buffer);
         return status;
     }
+
 
     //Serial.print("'wait' time taken ");
     total_time_taken += millis() - ts_wait_for_client;

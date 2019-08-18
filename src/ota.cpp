@@ -72,6 +72,7 @@ void setup_OTA()
     // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
     //Serial.println("Start updating ?" + type);
     sprintf(getPrintBuffer(), "Start local OTA update ... ?");
+    notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_LOCAL_CODE_BURN_STARTED);
     //Serial.println();
     Serial.println(getPrintBuffer());
     syslog_debug(getPrintBuffer());
@@ -93,6 +94,8 @@ void setup_OTA()
     //Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
   });
   ArduinoOTA.onError([](ota_error_t error) {
+    notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
     isInProgramMode = false;
     sprintf(getPrintBuffer(), "Error[%u]: ", error);
     //Serial.println();
