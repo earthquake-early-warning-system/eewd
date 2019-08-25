@@ -686,3 +686,12 @@ otherfiles/iot_logger_php_server/tbl_marks.sql
 .pio/build/esp01/libbc5/kalmanFilter/SimpleKalmanFilter.cpp.o
 otherfiles/iot_logger_php_server/google_auth/composer.lock
 otherfiles/iot_logger_php_server/google_auth/vendor
+.pio/build/esp01/libbc0/jLed/esp32_hal.cpp.o
+.pio/build/esp01/lib7ed/libTicker.a
+.pio/build/esp01/lib7ed/Ticker/Ticker.cpp.o
+.pio/build/esp01/libbc0/libjLed.a
+.pio/build/esp01/libbc0/jLed/jled_base.cpp.o
+.pio/build/esp01/src/notifiers.cpp.o
+otherfiles/iot_logger_php_server/imgs/logo.jpg~
+otherfiles/iot_logger_php_server/imgs/logo.kra
+otherfiles/iot_logger_php_server/imgs/logo.kra~
