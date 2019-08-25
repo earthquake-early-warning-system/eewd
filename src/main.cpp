@@ -28,6 +28,7 @@ const char *HOST_NAME = "remotedebug-air_conditioner_energy";
 elapsedSeconds checkMPUStatus;
 elapsedSeconds checkTelnetTime, checkPrintTime;
 elapsedMillis checkThingSpeakTime;
+elapsedMillis check_sensor_vibration_time;
 unsigned long last_time_thingspoke, last_time_telnet_talked;
 const int updateTelnetInterval = 1; // * 1000;
 
@@ -41,11 +42,11 @@ IPAddress dns(8, 8, 8, 8); // Google DNS
 bool whether_post_wifi_connect_setup_done;
 
 // //=======================================================================
-void ICACHE_RAM_ATTR onTimerISR()
-{
-  //handleClients();
-  timer1_write(5000); //12us??
-}
+// void ICACHE_RAM_ATTR onTimerISR()
+// {
+//   //handleClients();
+//   timer1_write(5000); //12us??
+// }
 
 
 bool is_safe_mode_active= false;
@@ -297,31 +298,41 @@ void loop()
 
   //processConfig();
 
-  ConfigListener *config_lstnr = getJsonConfigListenerPtr();
-
-  Device_config *config = config_lstnr->getDeviceConfigPtr(); 
-
-  if(acc_filtered < config->sensor_vibration_threshold_normal[0] )
+  if(check_sensor_vibration_time>sensor_vibration_update_duration)
   {
-    notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
-  }
+    check_sensor_vibration_time = 0;
 
-  if( (acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0] ) ) 
-  {
-    notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
-  }
+      ConfigListener *config_lstnr = getJsonConfigListenerPtr();
 
-  if( (acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0] ) ) 
-  {
-    notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
-  }
+      Device_config *config = config_lstnr->getDeviceConfigPtr(); 
 
-  if( (acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0] ) ) 
-  {
-    notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
-  }
+      if(acc_filtered < config->sensor_vibration_threshold_normal[0] )
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
+      }
 
-  notifier_ledNotifierLoop();
+      if( (acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0] ) ) 
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
+      }
+
+      if( (acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0] ) ) 
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
+      }
+
+      if( (acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0] ) ) 
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
+      }
+
+      if( (acc_filtered > config->sensor_vibration_threshold_critical[0] ) ) 
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
+      }
+
+      notifier_ledNotifierLoop();
+  }
 
 
   // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered

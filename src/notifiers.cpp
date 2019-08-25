@@ -75,7 +75,8 @@ enum LED_NOTIFIER_SENSOR_STATE
     LED_NOTIFIER_SENSOR_STATE__NOTIFY,
     LED_NOTIFIER_SENSOR_STATE__ALERT,
     LED_NOTIFIER_SENSOR_STATE__WARN,
-    LED_NOTIFIER_SENSOR_STATE__EMERGENCY 
+    LED_NOTIFIER_SENSOR_STATE__EMERGENCY,
+	LED_NOTIFIER_SENSOR_STATE__CRITICAL 
 };
 
 
@@ -405,6 +406,19 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			ledState(LED_ID_RED, 4.0); 
 			break;			 
 
+		case LED_NOTIFIER_SENSOR_STATE__CRITICAL :
+
+			// Continuous on
+					
+			ledState(LED_ID_YELLOW, 0); //  need to change earlier yellow led state
+			ledState(LED_ID_RED, 0); // need to change earlier red led state
+
+			digitalWrite(led_states[LED_ID_YELLOW].LED_PERI, LOW);// active low 'OFF'
+			digitalWrite(led_states[LED_ID_RED].LED_PERI, LOW);// active low 'OFF'
+
+			
+			break;			 
+
 		default:
 			break;
 	}
@@ -508,6 +522,10 @@ void notifier_setNotifierState(NOTIFIER_STATES _state)
 	
 	case _4_LED_SENSOR_EMERGENCY:
 		setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE__EMERGENCY); 
+		break; 
+
+	case _4_LED_SENSOR_CRITICAL:
+		setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE__CRITICAL); 
 		break; 
 
 	default:
