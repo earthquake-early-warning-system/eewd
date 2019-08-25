@@ -25,6 +25,7 @@ extern "C"
 
 const char *HOST_NAME = "remotedebug-air_conditioner_energy";
 
+elapsedSeconds checkMPUStatus;
 elapsedSeconds checkTelnetTime, checkPrintTime;
 elapsedMillis checkThingSpeakTime;
 unsigned long last_time_thingspoke, last_time_telnet_talked;
@@ -72,11 +73,10 @@ void checkResetCause()
 
     Serial.println(__LINE__);
 }
-
+bool status_mpu ;
 void setup()
 {
-  Serial.begin(115200);
-  notifier_ledNotifierSetup();
+  Serial.begin(115200); 
 
   //WiFi.disconnect();
   //delay(10);
@@ -88,15 +88,12 @@ void setup()
   Serial.println();
   Serial.print("Connecting to configured wifi...");
   syslog_info("Connecting to configured wifi..."); 
-
-  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
-
-  wifimanager_setup();
+ 
+  //wifimanager_setup();
  
   checkResetCause();
-
-  mpu_setup();
-
+  
+  
   pinMode(LED_BUILTIN, OUTPUT);
 
   // while (WiFi.status() != WL_CONNECTED)
@@ -114,16 +111,16 @@ void setup()
   // handleClients();
  
   //Serial.printf("Version %s\n",_VER_);
-  Serial.printf("Build at %s %s\n", __DATE__, __TIME__);
-  Serial.print("MAC: ");
-  Serial.println(WiFi.macAddress());
+  //Serial.printf_P("Build at %s %s\n", __DATE__, __TIME__);
+  Serial.printf_P("MAC: ");
+  Serial.printf_P(WiFi.macAddress().c_str());
 
-  Serial.print("Version: ");
-  Serial.println(_VER_);
+  Serial.printf_P("Version: ");
+  Serial.printf_P(_VER_);
   syslog_info("Version");
   syslog_info(_VER_);
 
-
+  Serial.flush();
   /* For Device's unique ID */
   uint8_t mac[6];
   wifi_get_macaddr(STATION_IF, mac);
@@ -153,9 +150,33 @@ void setup()
   Irms_resetSampleTimer();
 #endif
 
+Serial.printf_P("setting up MPU ..");
+status_mpu = mpu_setup();
+Serial.println(". done");
+
+
 #if (VIBRATION_SUB_DEVICE == ENABLED)
   mpu_resetSampleTimer();
 #endif
+
+bool status_notify = notifier_ledNotifierSetup();
+
+//Serial.printf_P("status_notify :%d", status_notify);
+sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
+syslog_warn(getPrintBuffer());
+
+notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+
+
+if(status_mpu==false)
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+    sprintf(getPrintBuffer(),"MPU not intialized.");
+    Serial.println(getPrintBuffer());
+    syslog_warn(getPrintBuffer()); 
+    
+  }
 
   //sendDeviceId(); // To be worked on insert_data.php file for this. t can create a table automatically if not existing
 
@@ -225,6 +246,15 @@ void loop()
       return;
   }
 
+  if(status_mpu==false)
+  {
+    //while(1)
+    {
+      notifier_ledNotifierLoop();
+      delay(0);
+    }
+  }
+
   bool config_proc_st = processConfig();
   if(config_proc_st==true)
   {
@@ -243,6 +273,12 @@ void loop()
   ts = millis();
 
 #if (VIBRATION_SUB_DEVICE == ENABLED)
+  
+  if(checkMPUStatus>=1)
+  { 
+    checkMPUStatus = 0;
+    //status_mpu = mpu_scan();
+  }
   mpu_loop();
 
   temp = mpu_getTemp();
@@ -273,6 +309,16 @@ void loop()
   if( (acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0] ) ) 
   {
     notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
+  }
+
+  if( (acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0] ) ) 
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
+  }
+
+  if( (acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0] ) ) 
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
   }
 
   notifier_ledNotifierLoop();

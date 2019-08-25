@@ -12,6 +12,8 @@ void syslog_warn(char* msg);
 void syslog_error(char* msg);
 
 bool mpu_setup();
+bool mpu_scan();
+void mpu_loop();
 float mpu_getTempFiltered();
 float mpu_getTemp();
 float mpu_getAccelFftMagFiltered();
@@ -45,7 +47,7 @@ char * getDeviceMacStr();
 
 void sendGraphDate(char* _device_id, char *message);
 
-void notifier_ledNotifierSetup();
+bool notifier_ledNotifierSetup();
 void notifier_setNotifierState(NOTIFIER_STATES _state);
 void notifier_ledNotifierLoop();
 

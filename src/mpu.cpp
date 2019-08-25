@@ -134,6 +134,11 @@ void mpu_resetSampleTimer()
   timer_mpu = millis();
 }
 
+bool mpu_scan()
+{
+  bool status = scanner_mpu.Scan(); // Followed by wire.begin
+  return status;
+}
 bool mpu_setup()
 {
   Serial.begin(115200);
