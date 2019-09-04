@@ -35,11 +35,11 @@ bool loop_OTA();
 
 void mpu_loop();
 
-bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
+//bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
 
 ConfigListener * getJsonConfigListenerPtr();
 
-bool updateCodeUpdateStatus(void);
+void updateCodeUpdateStatus();
 bool processConfig();
 
 void setDeviceMacStr();
@@ -50,6 +50,14 @@ void sendGraphDate(char* _device_id, char *message);
 bool notifier_ledNotifierSetup();
 void notifier_setNotifierState(NOTIFIER_STATES _state);
 void notifier_ledNotifierLoop();
+
+
+void setup_server_connection();
+void loop_server_connection(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
+void loop_config_server_connection();
+bool server_is_data_available();
+bool server_check_for_data();
+bool server_parse_data();
 
 
 #endif //COMMON_DEF_H

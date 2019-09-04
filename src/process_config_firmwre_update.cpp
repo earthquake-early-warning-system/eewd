@@ -104,10 +104,10 @@ bool processConfig()
         status = updateFirmware(config->device_code_to_update_to);
     }
 
-    if (status == true)
-    {
-        status = updateCodeUpdateStatus();
-    }
+    // if (status == true)
+    // {
+    //     status = updateCodeUpdateStatus();
+    // }
  
     // check others
     // e.g. buzzer and leds

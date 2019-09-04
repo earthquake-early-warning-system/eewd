@@ -109,6 +109,8 @@ void setup()
   whether_post_wifi_connect_setup_done = false;
 
   //setup_server();
+  setup_server_connection(); // can not initiate connection // only variable initiation.
+
   // handleClients();
  
   //Serial.printf("Version %s\n",_VER_);
@@ -234,19 +236,208 @@ void loop()
     return;
   }
 
-  if(has_config_received == false)
+  static enum SERVER_STATE server_state;
+
+  switch (server_state)
   {
-      
+    case SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG :
+    {
       notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
       sprintf(getPrintBuffer(), "No device config found. Synching...");
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
-      has_config_received = setup_php_server();
+      loop_config_server_connection();
+
+      server_state = SERVER_STATE::SERVER_STATE__SENT_FOR_CONFIG;
+      
+      // has_config_received
       delay(1000);
       return;
-  }
+    }
+    break;
 
+    case SERVER_STATE::SERVER_STATE__SENT_FOR_CONFIG :
+    {
+      //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+      sprintf(getPrintBuffer(), "Checking device config. Synching...");
+      Serial.println(getPrintBuffer());
+      syslog_debug(getPrintBuffer());
+
+      if( server_check_for_data() )
+      {
+        if(server_parse_data())
+        {
+          server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG;
+        }
+        else
+        {
+          server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+          delay(1000);
+          return;
+        } 
+      }
+      else
+      {
+         server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+         delay(1000);
+         return;
+      } 
+    }
+  break;
+
+  case SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG :
+  {
+    //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+    sprintf(getPrintBuffer(), "Device config received.");
+    Serial.println(getPrintBuffer());
+    syslog_debug(getPrintBuffer());
+
+    server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
+ 
+  }break;
+
+  case SERVER_STATE::SERVER_STATE__TO_SEND_DATA :
+  {
+    //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+    sprintf(getPrintBuffer(), "Ready to send data.");
+    Serial.println(getPrintBuffer());
+    syslog_debug(getPrintBuffer());
+
+    if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
+    {
+      checkThingSpeakTime = 0;
+      //last_time_thingspoke = millis();
+      sprintf(print_buffer, "data sending time");
+      Serial.println(print_buffer);
+      syslog_info(print_buffer);
+
+      long time_wifi_check = millis();
+      while (WiFi.status() != WL_CONNECTED)
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONN_FAILED);
+
+        Serial.print(".");
+        delay(250);
+
+        if (millis() - time_wifi_check > 60000)
+        {
+          notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+          Serial.println("Resetting the device as not connecting to configured wifi settings...");
+          delay(2000);
+          Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
+          delay(2000);
+          Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
+          delay(2000);
+          ESP.reset();
+        }
+      }
+
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
+
+        sr++;
+        loop_server_connection(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+        server_state = SERVER_STATE::SERVER_STATE__SENT_DATA;
+
+        sprintf(print_buffer, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
+        Serial.println();
+        Serial.println(print_buffer);
+        syslog_info(print_buffer);
+
+        //Serial.print("\nWifi connection OK ");
+        //Serial.printf("IP %s\n", WiFi.localIP().toString().c_str());
+
+        // For complete sampling
+        // Without this the first sample after this point is incomplete.
+        // These will not affect the sending time
+
+  #if (CURRENT_SUB_DEVICE == ENABLED)
+        Irms_resetSampleTimer();
+  #endif
+
+  #if (VIBRATION_SUB_DEVICE == ENABLED)
+        mpu_resetSampleTimer();
+  #endif
+ 
+      }
+      else
+      {
+        //WiFi.begin(ssid, password);
+      }
+    }
+ 
+  }break;
+
+
+  case SERVER_STATE::SERVER_STATE__SENT_DATA :
+  {
+      //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+      sprintf(getPrintBuffer(), "Checking device data send response.");
+      Serial.println(getPrintBuffer());
+      syslog_debug(getPrintBuffer());
+
+      if( server_check_for_data() )
+      {
+        if(server_parse_data())
+        {
+          server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_SMALL;
+          bool config_proc_st = processConfig();
+ 
+          if(config_proc_st==true)
+          {
+
+            updateCodeUpdateStatus();
+
+            server_state = SERVER_STATE::SERVER_STATE__SENT_DATA; // It should parse the data in the same struct
+
+
+            delay(0);
+            
+            
+            sprintf(getPrintBuffer(), "code updated resetting...");
+            Serial.println(getPrintBuffer());
+            syslog_debug(getPrintBuffer());
+
+            delay(1000);
+
+            ESP.reset();
+          }
+          else
+          {
+             
+            sprintf(getPrintBuffer(), "code updated not required.");
+            Serial.println(getPrintBuffer());
+            syslog_debug(getPrintBuffer());
+
+          }
+          
+        }
+        else
+        {
+          server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
+          //delay(1000);
+          //return;
+        } 
+      }
+      else
+      {
+         server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
+         //delay(1000);
+         //return;
+      } 
+    } break;
+
+  
+  default:
+    break;
+  }
+ 
   if(status_mpu==false)
   {
     //while(1)
@@ -256,20 +447,7 @@ void loop()
     }
   }
 
-  bool config_proc_st = processConfig();
-  if(config_proc_st==true)
-  {
-    delay(0);
-    
-    
-    sprintf(getPrintBuffer(), "code updated resetting...");
-    Serial.println(getPrintBuffer());
-    syslog_debug(getPrintBuffer());
-
-    delay(1000);
-
-    ESP.reset();
-  }
+  
 
   ts = millis();
 
@@ -357,105 +535,5 @@ void loop()
   //     //syslog_debug(print_buffer);
   //   }
   // }
-  if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
-  {
-    checkThingSpeakTime = 0;
-    //last_time_thingspoke = millis();
-    sprintf(print_buffer, "data sending time");
-    Serial.println(print_buffer);
-    syslog_info(print_buffer);
-
-    long time_wifi_check = millis();
-    while (WiFi.status() != WL_CONNECTED)
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONN_FAILED);
-
-      Serial.print(".");
-      delay(250);
-
-      if (millis() - time_wifi_check > 60000)
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
-        Serial.println("Resetting the device as not connecting to configured wifi settings...");
-        delay(2000);
-        Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
-        delay(2000);
-        Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
-        delay(2000);
-        ESP.reset();
-      }
-    }
-
-    if (WiFi.status() == WL_CONNECTED)
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
-
-      sr++;
-      loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
-
-      sprintf(print_buffer, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
-      Serial.println();
-      Serial.println(print_buffer);
-      syslog_info(print_buffer);
-
-      //Serial.print("\nWifi connection OK ");
-      //Serial.printf("IP %s\n", WiFi.localIP().toString().c_str());
-
-      // For complete sampling
-      // Without this the first sample after this point is incomplete.
-      // These will not affect the sending time
-
-#if (CURRENT_SUB_DEVICE == ENABLED)
-      Irms_resetSampleTimer();
-#endif
-
-#if (VIBRATION_SUB_DEVICE == ENABLED)
-      mpu_resetSampleTimer();
-#endif
-
-      return;
-
-      // Working example
-      // if (client.connect(server, 80))
-      // {
-
-      //   String tsData = apiWritekey;
-      //   tsData += "&field1=";
-      //   tsData += String(Irms_filtered); //
-      //   tsData += "&field2=";
-      //   tsData += String(temp_filtered); //
-      //   tsData += "&field3=";
-      //   tsData += String(acc_filtered);
-      //   tsData += "&field4=";
-      //   tsData += String(millis() * 0.001);
-      //   tsData += "&field5=";
-      //   tsData += String(Irms);
-      //   tsData += "&field6=";
-      //   tsData += String(temp); //
-      //   tsData += "&field7=";
-      //   tsData += String(acc); //
-      //   tsData += "\r\n\r\n";
-
-      //   client.print("POST /update HTTP/1.1\n");
-      //   client.print("Host: api.thingspeak.com\n");
-      //   client.print("Connection: close\n");
-      //   client.print("X-THINGSPEAKAPIKEY: " + String(apiWritekey) + "\n");
-      //   client.print("Content-Type: application/x-www-form-urlencoded\n");
-      //   client.print("Content-Length: ");
-      //   client.print(tsData.length());
-      //   client.print("\n\n");
-      //   client.print(tsData);
-      //   Serial.println("ThingSpeak data sent");
-      //   delay(250);
-      // }
-      // else
-      // {
-      // }
-      //client.stop();
-    }
-    else
-    {
-      //WiFi.begin(ssid, password);
-    }
-  }
+ 
 }
