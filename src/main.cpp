@@ -12,8 +12,6 @@ RemoteDebug Debug;
 
 #include "common_def.h"
 
-
-
 #ifdef ESP8266
 extern "C"
 {
@@ -41,8 +39,7 @@ IPAddress dns(8, 8, 8, 8); // Google DNS
 
 bool whether_post_wifi_connect_setup_done;
 
-
-  static enum SERVER_STATE server_state;
+static enum SERVER_STATE server_state;
 
 // //=======================================================================
 // void ICACHE_RAM_ATTR onTimerISR()
@@ -51,36 +48,34 @@ bool whether_post_wifi_connect_setup_done;
 //   timer1_write(5000); //12us??
 // }
 
-
-bool is_safe_mode_active= false;
+bool is_safe_mode_active = false;
 bool has_config_received = false;
 
 void checkResetCause()
 {
   Serial.println(__LINE__);
 
-    rst_info * rst_inf = ESP.getResetInfoPtr();
+  rst_info *rst_inf = ESP.getResetInfoPtr();
 
+  Serial.println(__LINE__);
+  syslog_info((char *)ESP.getResetReason().c_str());
 
-    Serial.println(__LINE__);
-    syslog_info((char*)ESP.getResetReason().c_str());
-    
-    Serial.println(__LINE__);
+  Serial.println(__LINE__);
 
-    if(rst_inf->reason==REASON_EXCEPTION_RST)
-    {
-      is_safe_mode_active = true;
-      syslog_info("Non zero reset reason. Going in safe mode.");
-      //in case there was some code issue
-      return;
-    }
+  if (rst_inf->reason == REASON_EXCEPTION_RST)
+  {
+    is_safe_mode_active = true;
+    syslog_info("Non zero reset reason. Going in safe mode.");
+    //in case there was some code issue
+    return;
+  }
 
-    Serial.println(__LINE__);
+  Serial.println(__LINE__);
 }
-bool status_mpu ;
+bool status_mpu;
 void setup()
 {
-  Serial.begin(115200); 
+  Serial.begin(115200);
 
   //WiFi.disconnect();
   //delay(10);
@@ -91,13 +86,12 @@ void setup()
   Serial.println();
   Serial.println();
   Serial.print("Connecting to configured wifi...");
-  syslog_info("Connecting to configured wifi..."); 
- 
+  syslog_info("Connecting to configured wifi...");
+
   //wifimanager_setup();
- 
+
   checkResetCause();
-  
-  
+
   pinMode(LED_BUILTIN, OUTPUT);
 
   // while (WiFi.status() != WL_CONNECTED)
@@ -116,7 +110,7 @@ void setup()
   server_state = SERVER_STATE__TO_SEND_FOR_CONFIG;
 
   // handleClients();
- 
+
   //Serial.printf("Version %s\n",_VER_);
   //Serial.printf_P("Build at %s %s\n", __DATE__, __TIME__);
   Serial.printf_P("MAC: ");
@@ -139,7 +133,6 @@ void setup()
   DEVICE_ID[4] = mac[4];
   DEVICE_ID[5] = mac[5];
 
-
   setDeviceMacStr();
   // String mac_str = (WiFi.macAddress());
   // mac_str.replace(":", "");
@@ -147,7 +140,7 @@ void setup()
 
   String device_id_based_ssid = "Device hotspot can be EEWD_" + String(getDeviceMacStr());
   Serial.println(device_id_based_ssid);
-  syslog_info(( char*)device_id_based_ssid.c_str());
+  syslog_info((char *)device_id_based_ssid.c_str());
 
 #if (CURRENT_SUB_DEVICE == ENABLED)
   Irms_setup();
@@ -157,32 +150,29 @@ void setup()
   Irms_resetSampleTimer();
 #endif
 
-Serial.printf_P("setting up MPU ..");
-status_mpu = mpu_setup();
-Serial.println(". done");
-
+  Serial.printf_P("setting up MPU ..");
+  status_mpu = mpu_setup();
+  Serial.println(". done");
 
 #if (VIBRATION_SUB_DEVICE == ENABLED)
   mpu_resetSampleTimer();
 #endif
 
-bool status_notify = notifier_ledNotifierSetup();
+  bool status_notify = notifier_ledNotifierSetup();
 
-//Serial.printf_P("status_notify :%d", status_notify);
-sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
-syslog_warn(getPrintBuffer());
+  //Serial.printf_P("status_notify :%d", status_notify);
+  sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
+  syslog_warn(getPrintBuffer());
 
-notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
 
-
-if(status_mpu==false)
+  if (status_mpu == false)
   {
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
-    sprintf(getPrintBuffer(),"MPU not intialized.");
+    sprintf(getPrintBuffer(), "MPU not intialized.");
     Serial.println(getPrintBuffer());
-    syslog_warn(getPrintBuffer()); 
-    
+    syslog_warn(getPrintBuffer());
   }
 
   //sendDeviceId(); // To be worked on insert_data.php file for this. t can create a table automatically if not existing
@@ -198,10 +188,9 @@ if(status_mpu==false)
 bool last_state = false;
 unsigned long sr, ts_acc;
 
-
 void loop()
 {
-   
+
   notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_PING);
   notifier_ledNotifierLoop();
 
@@ -234,62 +223,70 @@ void loop()
     }
   }
 
-  if(is_safe_mode_active==true)
+  if (is_safe_mode_active == true)
   {
 
     return;
   }
- 
+
   switch (server_state)
   {
-    case SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG :
+  case SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG:
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+    sprintf(getPrintBuffer(), "No device config found. Synching...");
+    Serial.println(getPrintBuffer());
+    syslog_debug(getPrintBuffer());
+
+    bool st = loop_config_server_connection();
+    if (st)
     {
-      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
-
-      sprintf(getPrintBuffer(), "No device config found. Synching...");
-      Serial.println(getPrintBuffer());
-      syslog_debug(getPrintBuffer());
-      loop_config_server_connection();
-
       server_state = SERVER_STATE::SERVER_STATE__SENT_FOR_CONFIG;
-      
-      // has_config_received
-      delay(1000);
-      return;
     }
-    break;
-
-    case SERVER_STATE::SERVER_STATE__SENT_FOR_CONFIG :
+    else
     {
-      //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+      server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+    }
+ 
 
-      sprintf(getPrintBuffer(), "Checking device config. Synching...");
-      Serial.println(getPrintBuffer());
-      syslog_debug(getPrintBuffer());
+    // has_config_received
+    delay(1000);
+    return;
+  }
+  break;
 
-      if( server_check_for_data() )
+  case SERVER_STATE::SERVER_STATE__SENT_FOR_CONFIG:
+  {
+    //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+    sprintf(getPrintBuffer(), "Checking device config. Synching...");
+    Serial.println(getPrintBuffer());
+    syslog_debug(getPrintBuffer());
+
+    if (server_check_for_data())
+    {
+      if (server_parse_data())
       {
-        if(server_parse_data())
-        {
-          server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG;
-        }
-        else
-        {
-          server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
-          delay(1000);
-          return;
-        } 
+        server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG;
       }
       else
       {
-         server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
-         delay(1000);
-         return;
-      } 
+        server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+        delay(1000);
+        return;
+      }
     }
+    else
+    {
+      server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+      delay(1000);
+      return;
+    }
+  }
   break;
 
-  case SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG :
+  case SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG:
   {
     //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
@@ -298,13 +295,13 @@ void loop()
     syslog_debug(getPrintBuffer());
 
     server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
- 
-  }break;
+  }
+  break;
 
-  case SERVER_STATE::SERVER_STATE__TO_SEND_DATA :
+  case SERVER_STATE::SERVER_STATE__TO_SEND_DATA:
   {
     //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
-    
+
     // Put it inside a timed print
     // sprintf(getPrintBuffer(), "Ready to send data.");
     // Serial.println(getPrintBuffer());
@@ -344,8 +341,15 @@ void loop()
         notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
 
         sr++;
-        loop_server_connection(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
-        server_state = SERVER_STATE::SERVER_STATE__SENT_DATA;
+        bool st = loop_server_connection(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+        if (st)
+        {
+          server_state = SERVER_STATE::SERVER_STATE__SENT_DATA;
+        }
+        else
+        {
+          server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
+        }
 
         sprintf(print_buffer, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
         Serial.println();
@@ -359,90 +363,91 @@ void loop()
         // Without this the first sample after this point is incomplete.
         // These will not affect the sending time
 
-  #if (CURRENT_SUB_DEVICE == ENABLED)
+#if (CURRENT_SUB_DEVICE == ENABLED)
         Irms_resetSampleTimer();
-  #endif
+#endif
 
-  #if (VIBRATION_SUB_DEVICE == ENABLED)
+#if (VIBRATION_SUB_DEVICE == ENABLED)
         mpu_resetSampleTimer();
-  #endif
- 
+#endif
       }
       else
       {
         //WiFi.begin(ssid, password);
       }
     }
- 
-  }break;
+  }
+  break;
 
-
-  case SERVER_STATE::SERVER_STATE__SENT_DATA :
+  case SERVER_STATE::SERVER_STATE__SENT_DATA:
   {
-      //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+    //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
-      sprintf(getPrintBuffer(), "Checking device data send response.");
-      Serial.println(getPrintBuffer());
-      syslog_debug(getPrintBuffer());
+    sprintf(getPrintBuffer(), "Checking device data send response.");
+    Serial.println(getPrintBuffer());
+    syslog_debug(getPrintBuffer());
 
-      if( server_check_for_data() )
+    if (server_check_for_data())
+    {
+      if (server_parse_data())
       {
-        if(server_parse_data())
+        server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_SMALL;
+        bool config_proc_st = processConfig();
+
+        if (config_proc_st == true)
         {
-          server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_SMALL;
-          bool config_proc_st = processConfig();
- 
-          if(config_proc_st==true)
+
+          bool st = updateCodeUpdateStatus();
+          if (st)
           {
-
-            updateCodeUpdateStatus();
-
-            server_state = SERVER_STATE::SERVER_STATE__SENT_DATA; // It should parse the data in the same struct
-
-
-            delay(0);
-            
-            
-            sprintf(getPrintBuffer(), "code updated resetting...");
-            Serial.println(getPrintBuffer());
-            syslog_debug(getPrintBuffer());
-
-            delay(1000);
-
-            ESP.reset();
+            server_state = SERVER_STATE::SERVER_STATE__SENT_DATA;
           }
           else
           {
-             
             server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
-            sprintf(getPrintBuffer(), "code updated not required.");
-            Serial.println(getPrintBuffer());
-            syslog_debug(getPrintBuffer());
-
           }
-          
+          // It should parse the data in the same struct
+
+          delay(0);
+
+          sprintf(getPrintBuffer(), "code updated resetting...");
+          Serial.println(getPrintBuffer());
+          syslog_debug(getPrintBuffer());
+
+          delay(1000);
+
+          ESP.reset();
         }
         else
         {
+
           server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
-          //delay(1000);
-          //return;
-        } 
+          sprintf(getPrintBuffer(), "code updated not required.");
+          Serial.println(getPrintBuffer());
+          syslog_debug(getPrintBuffer());
+        }
       }
       else
       {
-         server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
-         //delay(1000);
-         //return;
-      } 
-    } break;
+        server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
+        //delay(1000);
+        //return;
+      }
+    }
+    else
+    {
+      server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
+      //delay(1000);
+      //return;
+    }
+  }
+  break;
 
-  
   default:
     break;
   }
- 
-  if(status_mpu==false)
+
+  if (status_mpu == false)
   {
     //while(1)
     {
@@ -451,14 +456,12 @@ void loop()
     }
   }
 
-  
-
   ts = millis();
 
 #if (VIBRATION_SUB_DEVICE == ENABLED)
-  
-  if(checkMPUStatus>=1)
-  { 
+
+  if (checkMPUStatus >= 1)
+  {
     checkMPUStatus = 0;
     //status_mpu = mpu_scan();
   }
@@ -480,42 +483,41 @@ void loop()
 
   //processConfig();
 
-  if(check_sensor_vibration_time>sensor_vibration_update_duration)
+  if (check_sensor_vibration_time > sensor_vibration_update_duration)
   {
     check_sensor_vibration_time = 0;
 
-      ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+    ConfigListener *config_lstnr = getJsonConfigListenerPtr();
 
-      Device_config *config = config_lstnr->getDeviceConfigPtr(); 
+    Device_config *config = config_lstnr->getDeviceConfigPtr();
 
-      if(acc_filtered < config->sensor_vibration_threshold_normal[0] )
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
-      }
+    if (acc_filtered < config->sensor_vibration_threshold_normal[0])
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
+    }
 
-      if( (acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
-      }
+    if ((acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
+    }
 
-      if( (acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
-      }
+    if ((acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
+    }
 
-      if( (acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
-      }
+    if ((acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
+    }
 
-      if( (acc_filtered > config->sensor_vibration_threshold_critical[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
-      }
+    if ((acc_filtered > config->sensor_vibration_threshold_critical[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
+    }
 
-      notifier_ledNotifierLoop();
+    notifier_ledNotifierLoop();
   }
-
 
   // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered
 
@@ -539,5 +541,4 @@ void loop()
   //     //syslog_debug(print_buffer);
   //   }
   // }
- 
 }

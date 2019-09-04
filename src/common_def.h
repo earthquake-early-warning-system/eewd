@@ -39,7 +39,7 @@ void mpu_loop();
 
 ConfigListener * getJsonConfigListenerPtr();
 
-void updateCodeUpdateStatus();
+bool updateCodeUpdateStatus();
 bool processConfig();
 
 void setDeviceMacStr();
@@ -53,8 +53,8 @@ void notifier_ledNotifierLoop();
 
 
 void setup_server_connection();
-void loop_server_connection(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
-void loop_config_server_connection();
+bool loop_server_connection(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
+bool loop_config_server_connection();
 bool server_is_data_available();
 bool server_check_for_data();
 bool server_parse_data();

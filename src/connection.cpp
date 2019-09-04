@@ -31,8 +31,13 @@ bool server_connect()
 	bool status = true;
 	if (!sclient.connected())
 	{
+		sclient.flush();
+		sclient.stop();
+		sclient.setTimeout(0);
 		if (!sclient.connect(php_server, php_server_port))
 		{
+			sclient.flush();
+			sclient.stop();
 			Serial.println("Connect Failed");
 			status = false;
 		}
@@ -147,7 +152,7 @@ bool check_for_response()
 	bool status;
     uint8_t status_str[32] = {0};
     const char *status_ptr = (const char *)status_str;
-    sclient.setTimeout(1500);
+    sclient.setTimeout(1);
 
     sclient.readBytesUntil('\r', status_str, sizeof(status_str)); 
 
@@ -185,7 +190,7 @@ bool server_check_for_data()
 	bool status = check_for_response();
 	if(status == true)
 	{
-		sclient.setTimeout(2);
+		sclient.setTimeout(1);
 		char endOfHeaders[] = "\r\n\r\n";
 		if (!sclient.find(endOfHeaders))
 		{
@@ -211,30 +216,40 @@ void setup_server_connection()
     device_config = json_parser_listener.getDeviceConfigPtr();
 }
 
-void loop_server_connection(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r)
+bool loop_server_connection(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r)
 {
-
+	bool status = true;
+	sclient.setTimeout(1);
 	if (server_connect())
 	{
-		sclient.setTimeout(2);
+		sclient.setTimeout(1);
 		 
 		String getStr = create_query_data(_php_sr,  _php_uptm, _php_temp_f, _php_temp_r, _php_current_f, _php_current_r, _php_accel_f, _php_accel_r);
 
 		// send data
 		if(sclient.printf(getStr.c_str())>0) // send data
 		{
+			status = true;
 			// sent
 			Serial.printf_P("Send sent: %s\n",getStr.c_str());
 		}
  
 		else
 		{
+			status = false;
 			sclient.stop();
 			Serial.println("Send Failed");
 			while (sclient.connected())
 				delay(0);
 		}
 	}
+	else
+	{
+		status = false;
+		sclient.stop();
+	}
+	
+	return status;
 
 	// client->onData(&handleData, client);
 	// client->onConnect(&onConnect, client);
@@ -243,29 +258,40 @@ void loop_server_connection(unsigned long _php_sr, unsigned long _php_uptm, floa
 }
 
 
-void loop_config_server_connection()
+bool loop_config_server_connection()
 {
-
+	bool status = true;
+    sclient.setTimeout(1);
 	if (server_connect())
 	{
-		sclient.setTimeout(2);
+		sclient.setTimeout(1);
 		 
 		String getStr = create_query_config();
 		// send data
 		if(sclient.printf(getStr.c_str())>0) // send data
 		{
+			status = true;
 			// sent
 			Serial.printf_P("Send sent: %s\n",getStr.c_str());
 		}
  
 		else
 		{
+			status = false;
 			sclient.stop();
 			Serial.println("Send Failed");
 			while (sclient.connected())
 				delay(0);
 		}
 	}
+	else
+	{
+		status = false;
+	}
+
+		return status;
+
+	
 
 	// client->onData(&handleData, client);
 	// client->onConnect(&onConnect, client);
@@ -274,29 +300,37 @@ void loop_config_server_connection()
 }
 
 
-void updateCodeUpdateStatus()
+bool updateCodeUpdateStatus()
 {
-
+	bool status = false;
+	sclient.setTimeout(1);
 	if (server_connect())
 	{
-		sclient.setTimeout(2);
+		sclient.setTimeout(1);
 		 
 		String getStr = create_query_fw_status();
 		// send data
 		if(sclient.printf(getStr.c_str())>0) // send data
 		{
+			status  = true;
 			// sent
 			Serial.printf_P("Send sent: %s\n",getStr.c_str());
 		}
- 
 		else
 		{
+			status = false;
 			sclient.stop();
 			Serial.println("Send Failed");
 			while (sclient.connected())
 				delay(0);
 		}
 	}
+	else
+	{
+		status = false;
+	}
+	
+	return status;
 
 	// client->onData(&handleData, client);
 	// client->onConnect(&onConnect, client);
