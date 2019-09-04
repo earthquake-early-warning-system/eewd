@@ -109,7 +109,7 @@ char read_data()
 // call it only when check_for_data() == true
 bool server_parse_data()
 {
-	bool status ;
+	bool status = true;
 	json_parser.reset();
 	unsigned long ts_wait_for_client = millis();
     while (server_is_data_available())

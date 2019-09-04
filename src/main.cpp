@@ -41,6 +41,9 @@ IPAddress dns(8, 8, 8, 8); // Google DNS
 
 bool whether_post_wifi_connect_setup_done;
 
+
+  static enum SERVER_STATE server_state;
+
 // //=======================================================================
 // void ICACHE_RAM_ATTR onTimerISR()
 // {
@@ -110,6 +113,7 @@ void setup()
 
   //setup_server();
   setup_server_connection(); // can not initiate connection // only variable initiation.
+  server_state = SERVER_STATE__TO_SEND_FOR_CONFIG;
 
   // handleClients();
  
@@ -235,9 +239,7 @@ void loop()
 
     return;
   }
-
-  static enum SERVER_STATE server_state;
-
+ 
   switch (server_state)
   {
     case SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG :
@@ -302,10 +304,11 @@ void loop()
   case SERVER_STATE::SERVER_STATE__TO_SEND_DATA :
   {
     //notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
-
-    sprintf(getPrintBuffer(), "Ready to send data.");
-    Serial.println(getPrintBuffer());
-    syslog_debug(getPrintBuffer());
+    
+    // Put it inside a timed print
+    // sprintf(getPrintBuffer(), "Ready to send data.");
+    // Serial.println(getPrintBuffer());
+    // syslog_debug(getPrintBuffer());
 
     if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
     {
@@ -411,6 +414,7 @@ void loop()
           else
           {
              
+            server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
             sprintf(getPrintBuffer(), "code updated not required.");
             Serial.println(getPrintBuffer());
             syslog_debug(getPrintBuffer());
