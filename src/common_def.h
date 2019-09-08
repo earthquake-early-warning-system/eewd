@@ -58,6 +58,7 @@ bool loop_config_server_connection();
 bool server_is_data_available();
 bool server_check_for_data();
 bool server_parse_data();
+void server_read_all_data(); // flush
 
 
 #endif //COMMON_DEF_H

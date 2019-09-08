@@ -101,6 +101,14 @@ String create_query_data(unsigned long _php_sr, unsigned long _php_uptm, float _
 	return getStr;
 }
 
+void server_read_all_data()
+{
+	while(server_is_data_available())
+	{
+		sclient.read();
+	}	
+}
+
 bool server_is_data_available()
 {
 	return sclient.available();
@@ -152,14 +160,14 @@ bool check_for_response()
 	bool status;
     uint8_t status_str[32] = {0};
     const char *status_ptr = (const char *)status_str;
-    sclient.setTimeout(1);
+    sclient.setTimeout(2000);
 
     sclient.readBytesUntil('\r', status_str, sizeof(status_str)); 
 
-	// sprintf(getPrintBuffer(), "\n\nResponse: %s\n\n", status_str);
+	sprintf(getPrintBuffer(), "\n\nResponse: %s\n\n", status_str);
     //     //Serial.print(F("Unexpected response: "));
-	// Serial.println(getPrintBuffer());
-	// syslog_warn(getPrintBuffer());
+	Serial.println(getPrintBuffer());
+	syslog_debug(getPrintBuffer());
 
     //notifier_setNotifierState(NOTIFIER_STATES::_2_LED_SERVER_DATA_SENT_RESPONDED);
  
@@ -190,7 +198,7 @@ bool server_check_for_data()
 	bool status = check_for_response();
 	if(status == true)
 	{
-		sclient.setTimeout(1);
+		sclient.setTimeout(500);
 		char endOfHeaders[] = "\r\n\r\n";
 		if (!sclient.find(endOfHeaders))
 		{

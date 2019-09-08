@@ -341,7 +341,25 @@ void loop()
     {
       if (server_parse_data())
       {
-        server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG;
+        ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+        Device_config *config = config_lstnr->getDeviceConfigPtr();
+        if(config->device_id[0]!=-1)
+        {
+          server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_LONG;
+        }
+        else
+        {
+          if(server_is_data_available())
+          {
+            server_read_all_data();
+
+            sprintf(getPrintBuffer(), "Something wrong, cleared buffer.");
+            Serial.println(getPrintBuffer());
+            syslog_debug(getPrintBuffer());
+          }
+          server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+        }
+        
       }
       else
       {
@@ -464,12 +482,16 @@ void loop()
     {
       if (server_parse_data())
       {
+        ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+        Device_config *config = config_lstnr->getDeviceConfigPtr();
+        if(config->device_id[0]!=-1)
+        {
+          
         server_state = SERVER_STATE::SERVER_STATE__RECEIVED_CONFIG_SMALL;
         bool config_proc_st = processConfig();
 
         if (config_proc_st == true)
-        {
-
+        { 
           bool st = updateCodeUpdateStatus();
           if (st)
           {
@@ -499,6 +521,20 @@ void loop()
           Serial.println(getPrintBuffer());
           syslog_debug(getPrintBuffer());
         }
+        }
+        else
+        {
+          if(server_is_data_available())
+          {
+            server_read_all_data();
+            
+            sprintf(getPrintBuffer(), "Something wrong, cleared buffer.");
+            Serial.println(getPrintBuffer());
+            syslog_debug(getPrintBuffer());
+          }
+          server_state = SERVER_STATE::SERVER_STATE__TO_SEND_FOR_CONFIG;
+        }
+        
       }
       else
       {
