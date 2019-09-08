@@ -483,7 +483,7 @@ void loop()
 
           delay(0);
 
-          sprintf(getPrintBuffer(), "code updated resetting...");
+          sprintf(getPrintBuffer(), "code updated; resetting...");
           Serial.println(getPrintBuffer());
           syslog_debug(getPrintBuffer());
 
@@ -495,7 +495,7 @@ void loop()
         {
 
           server_state = SERVER_STATE::SERVER_STATE__TO_SEND_DATA;
-          sprintf(getPrintBuffer(), "code updated not required.");
+          sprintf(getPrintBuffer(), "code update not required.");
           Serial.println(getPrintBuffer());
           syslog_debug(getPrintBuffer());
         }
