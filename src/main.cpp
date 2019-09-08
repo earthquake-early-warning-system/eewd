@@ -228,6 +228,79 @@ void loop()
 
     return;
   }
+ 
+ 
+  if (status_mpu == false)
+  {
+    //while(1)
+    {
+      notifier_ledNotifierLoop();
+      delay(0);
+    }
+  }
+
+  ts = millis();
+
+#if (VIBRATION_SUB_DEVICE == ENABLED)
+
+  if (checkMPUStatus >= 1)
+  {
+    checkMPUStatus = 0;
+    //status_mpu = mpu_scan();
+  }
+  mpu_loop();
+
+  temp = mpu_getTemp();
+  acc = mpu_getAccelFftMag();
+  temp_filtered = mpu_getTempFiltered();
+  acc_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
+#endif
+
+#if (CURRENT_SUB_DEVICE == ENABLED)
+  bool state = Irms_loop(); // It is not measuring status
+
+  Irms = Irms_getCurr();
+
+  Irms_filtered = Irms_getFilteredCurr();
+#endif
+
+  //processConfig();
+
+  if (check_sensor_vibration_time > sensor_vibration_update_duration)
+  {
+    check_sensor_vibration_time = 0;
+
+    ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+
+    Device_config *config = config_lstnr->getDeviceConfigPtr();
+
+    if (acc_filtered < config->sensor_vibration_threshold_normal[0])
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
+    }
+
+    if ((acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
+    }
+
+    if ((acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
+    }
+
+    if ((acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
+    }
+
+    if ((acc_filtered > config->sensor_vibration_threshold_critical[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
+    }
+
+    notifier_ledNotifierLoop();
+  }
 
   switch (server_state)
   {
@@ -445,78 +518,6 @@ void loop()
 
   default:
     break;
-  }
-
-  if (status_mpu == false)
-  {
-    //while(1)
-    {
-      notifier_ledNotifierLoop();
-      delay(0);
-    }
-  }
-
-  ts = millis();
-
-#if (VIBRATION_SUB_DEVICE == ENABLED)
-
-  if (checkMPUStatus >= 1)
-  {
-    checkMPUStatus = 0;
-    //status_mpu = mpu_scan();
-  }
-  mpu_loop();
-
-  temp = mpu_getTemp();
-  acc = mpu_getAccelFftMag();
-  temp_filtered = mpu_getTempFiltered();
-  acc_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
-#endif
-
-#if (CURRENT_SUB_DEVICE == ENABLED)
-  bool state = Irms_loop(); // It is not measuring status
-
-  Irms = Irms_getCurr();
-
-  Irms_filtered = Irms_getFilteredCurr();
-#endif
-
-  //processConfig();
-
-  if (check_sensor_vibration_time > sensor_vibration_update_duration)
-  {
-    check_sensor_vibration_time = 0;
-
-    ConfigListener *config_lstnr = getJsonConfigListenerPtr();
-
-    Device_config *config = config_lstnr->getDeviceConfigPtr();
-
-    if (acc_filtered < config->sensor_vibration_threshold_normal[0])
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
-    }
-
-    if ((acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0]))
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
-    }
-
-    if ((acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0]))
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
-    }
-
-    if ((acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0]))
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
-    }
-
-    if ((acc_filtered > config->sensor_vibration_threshold_critical[0]))
-    {
-      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
-    }
-
-    notifier_ledNotifierLoop();
   }
 
   // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered
