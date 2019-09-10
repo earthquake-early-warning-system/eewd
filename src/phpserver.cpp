@@ -39,6 +39,14 @@ bool getDeviceConfig();
 bool readCodeUpdateStatus();
 void printDeviceConfig( Device_config *_device_config);
 
+void close_all_connections()
+{
+    if(http_wificlient.connected())
+    { 
+        http_wificlient.stopAll();
+    }
+}
+
 bool setup_php_server()
 {
 

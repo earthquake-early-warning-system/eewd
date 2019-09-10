@@ -36,6 +36,7 @@ bool loop_OTA();
 void mpu_loop();
 
 bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
+void close_all_connections();
 
 ConfigListener * getJsonConfigListenerPtr();
 
@@ -51,5 +52,7 @@ bool notifier_ledNotifierSetup();
 void notifier_setNotifierState(NOTIFIER_STATES _state);
 void notifier_ledNotifierLoop();
 
+void jumper_setup();
+bool jumper_offline_mode_status();
 
 #endif //COMMON_DEF_H

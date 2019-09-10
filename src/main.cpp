@@ -12,8 +12,6 @@ RemoteDebug Debug;
 
 #include "common_def.h"
 
-
-
 #ifdef ESP8266
 extern "C"
 {
@@ -48,36 +46,36 @@ bool whether_post_wifi_connect_setup_done;
 //   timer1_write(5000); //12us??
 // }
 
-
-bool is_safe_mode_active= false;
+bool is_safe_mode_active = false;
 bool has_config_received = false;
 
 void checkResetCause()
 {
   Serial.println(__LINE__);
 
-    rst_info * rst_inf = ESP.getResetInfoPtr();
+  rst_info *rst_inf = ESP.getResetInfoPtr();
 
+  Serial.println(__LINE__);
+  syslog_info((char *)ESP.getResetReason().c_str());
 
-    Serial.println(__LINE__);
-    syslog_info((char*)ESP.getResetReason().c_str());
-    
-    Serial.println(__LINE__);
+  Serial.println(__LINE__);
 
-    if(rst_inf->reason==REASON_EXCEPTION_RST)
-    {
-      is_safe_mode_active = true;
-      syslog_info("Non zero reset reason. Going in safe mode.");
-      //in case there was some code issue
-      return;
-    }
+  if (rst_inf->reason == REASON_EXCEPTION_RST)
+  {
+    is_safe_mode_active = true;
+    syslog_info("Non zero reset reason. Going in safe mode.");
+    //in case there was some code issue
+    return;
+  }
 
-    Serial.println(__LINE__);
+  Serial.println(__LINE__);
 }
-bool status_mpu ;
+bool status_mpu;
+bool whether_in_offline_mode;
+
 void setup()
 {
-  Serial.begin(115200); 
+  Serial.begin(115200);
 
   //WiFi.disconnect();
   //delay(10);
@@ -87,14 +85,28 @@ void setup()
 
   Serial.println();
   Serial.println();
-  Serial.print("Connecting to configured wifi...");
-  syslog_info("Connecting to configured wifi..."); 
- 
-  //wifimanager_setup();
- 
+
+  jumper_setup();
+  whether_in_offline_mode = jumper_offline_mode_status();
+
+  if (whether_in_offline_mode)
+  {
+
+    WiFi.mode(WIFI_OFF);
+
+    Serial.print("offline mode turned off wifi.");
+    syslog_info("offline mode turned off wifi."); // worthless
+  }
+  else
+  {
+    Serial.print("Connecting to configured wifi...");
+    syslog_info("Connecting to configured wifi...");
+
+    wifimanager_setup();
+  }
+
   checkResetCause();
-  
-  
+
   pinMode(LED_BUILTIN, OUTPUT);
 
   // while (WiFi.status() != WL_CONNECTED)
@@ -110,7 +122,7 @@ void setup()
 
   //setup_server();
   // handleClients();
- 
+
   //Serial.printf("Version %s\n",_VER_);
   //Serial.printf_P("Build at %s %s\n", __DATE__, __TIME__);
   Serial.printf_P("MAC: ");
@@ -133,7 +145,6 @@ void setup()
   DEVICE_ID[4] = mac[4];
   DEVICE_ID[5] = mac[5];
 
-
   setDeviceMacStr();
   // String mac_str = (WiFi.macAddress());
   // mac_str.replace(":", "");
@@ -141,7 +152,7 @@ void setup()
 
   String device_id_based_ssid = "Device hotspot can be EEWD_" + String(getDeviceMacStr());
   Serial.println(device_id_based_ssid);
-  syslog_info(( char*)device_id_based_ssid.c_str());
+  syslog_info((char *)device_id_based_ssid.c_str());
 
 #if (CURRENT_SUB_DEVICE == ENABLED)
   Irms_setup();
@@ -151,32 +162,29 @@ void setup()
   Irms_resetSampleTimer();
 #endif
 
-Serial.printf_P("setting up MPU ..");
-status_mpu = mpu_setup();
-Serial.println(". done");
-
+  Serial.printf_P("setting up MPU ..");
+  status_mpu = mpu_setup();
+  Serial.println(". done");
 
 #if (VIBRATION_SUB_DEVICE == ENABLED)
   mpu_resetSampleTimer();
 #endif
 
-bool status_notify = notifier_ledNotifierSetup();
+  bool status_notify = notifier_ledNotifierSetup();
 
-//Serial.printf_P("status_notify :%d", status_notify);
-sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
-syslog_warn(getPrintBuffer());
+  //Serial.printf_P("status_notify :%d", status_notify);
+  sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
+  syslog_warn(getPrintBuffer());
 
-notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
 
-
-if(status_mpu==false)
+  if (status_mpu == false)
   {
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
-    sprintf(getPrintBuffer(),"MPU not intialized.");
+    sprintf(getPrintBuffer(), "MPU not intialized.");
     Serial.println(getPrintBuffer());
-    syslog_warn(getPrintBuffer()); 
-    
+    syslog_warn(getPrintBuffer());
   }
 
   //sendDeviceId(); // To be worked on insert_data.php file for this. t can create a table automatically if not existing
@@ -192,10 +200,10 @@ if(status_mpu==false)
 bool last_state = false;
 unsigned long sr, ts_acc;
 
-
 void loop()
 {
-   
+  whether_in_offline_mode = jumper_offline_mode_status();
+
   notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_PING);
   notifier_ledNotifierLoop();
 
@@ -228,15 +236,17 @@ void loop()
     }
   }
 
-  if(is_safe_mode_active==true)
+  if (is_safe_mode_active == true)
   {
 
     return;
   }
 
-  if(has_config_received == false)
+  if (false == whether_in_offline_mode)
   {
-      
+    if (has_config_received == false)
+    {
+
       notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
       sprintf(getPrintBuffer(), "No device config found. Synching...");
@@ -245,9 +255,10 @@ void loop()
       has_config_received = setup_php_server();
       delay(1000);
       return;
+    }
   }
 
-  if(status_mpu==false)
+  if (status_mpu == false)
   {
     //while(1)
     {
@@ -256,27 +267,30 @@ void loop()
     }
   }
 
-  bool config_proc_st = processConfig();
-  if(config_proc_st==true)
+  if (false == whether_in_offline_mode)
   {
-    delay(0);
-    
-    
-    sprintf(getPrintBuffer(), "code updated resetting...");
-    Serial.println(getPrintBuffer());
-    syslog_debug(getPrintBuffer());
 
-    delay(1000);
+    bool config_proc_st = processConfig();
+    if (config_proc_st == true)
+    {
+      delay(0);
 
-    ESP.reset();
+      sprintf(getPrintBuffer(), "code updated resetting...");
+      Serial.println(getPrintBuffer());
+      syslog_debug(getPrintBuffer());
+
+      delay(1000);
+
+      ESP.reset();
+    }
   }
 
   ts = millis();
 
 #if (VIBRATION_SUB_DEVICE == ENABLED)
-  
-  if(checkMPUStatus>=1)
-  { 
+
+  if (checkMPUStatus >= 1)
+  {
     checkMPUStatus = 0;
     //status_mpu = mpu_scan();
   }
@@ -298,68 +312,80 @@ void loop()
 
   //processConfig();
 
-  if(check_sensor_vibration_time>sensor_vibration_update_duration)
+
+
+  // config fixed
+  if (true == whether_in_offline_mode)
+  {
+    ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+
+    Device_config *config = config_lstnr->getDeviceConfigPtr();
+
+    config->sensor_vibration_threshold_normal[0] = 0.1;
+    config->sensor_vibration_threshold_alert[0] = 1.0;
+    config->sensor_vibration_threshold_warning[0] = 2.0;
+    config->sensor_vibration_threshold_critical[0] = 4.0; 
+
+  }
+
+  if (check_sensor_vibration_time > sensor_vibration_update_duration)
   {
     check_sensor_vibration_time = 0;
 
-      ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+    ConfigListener *config_lstnr = getJsonConfigListenerPtr();
 
-      Device_config *config = config_lstnr->getDeviceConfigPtr(); 
+    Device_config *config = config_lstnr->getDeviceConfigPtr();
 
-      if(acc_filtered < config->sensor_vibration_threshold_normal[0] )
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
-      }
+    if (acc_filtered < config->sensor_vibration_threshold_normal[0])
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
+    }
 
-      if( (acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
-      }
+    if ((acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
+    }
 
-      if( (acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
-      }
+    if ((acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
+    }
 
-      if( (acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
-      }
+    if ((acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
+    }
 
-      if( (acc_filtered > config->sensor_vibration_threshold_critical[0] ) ) 
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
-      }
+    if ((acc_filtered > config->sensor_vibration_threshold_critical[0]))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
+    }
 
-      notifier_ledNotifierLoop();
   }
-
+  
+  notifier_ledNotifierLoop();
 
   // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered
 
   ts = millis() - ts;
   dt_loop = micros() - dt_loop;
+ 
 
-  // if (checkPrintTime > 0)
-  // {
-  //   checkPrintTime = 0;
-  //   Serial.printf("* loop dt %d  uptm %d(VERBOSE)\n", dt_loop, millis());
-  // }
-
-  // if (true == whether_post_wifi_connect_setup_done)
-  // {
-  //   if (checkTelnetTime >= updateTelnetInterval)
-  //   {
-  //     checkTelnetTime = 0;
-  //     //last_time_telnet_talked = millis();
-  //     sprintf_P(print_buffer, "* %f (%f) A, %f (%f) dC, %f (%f) G(VERBOSE)\n", Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered);
-  //     //DEBUG_V(print_buffer);//"* %f (%f) A, %f (%f) dC, %f (%f) G(VERBOSE)\n", Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered);
-  //     //syslog_debug(print_buffer);
-  //   }
-  // }
   if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
   {
     checkThingSpeakTime = 0;
+
+    if (true == whether_in_offline_mode)
+    {
+      WiFi.mode(WIFI_OFF); 
+      close_all_connections(); 
+
+      sprintf(print_buffer, "offline mode");
+      Serial.println(print_buffer);
+      syslog_info(print_buffer);
+
+      return;
+    }
     //last_time_thingspoke = millis();
     sprintf(print_buffer, "data sending time");
     Serial.println(print_buffer);
@@ -414,44 +440,7 @@ void loop()
 #endif
 
       return;
-
-      // Working example
-      // if (client.connect(server, 80))
-      // {
-
-      //   String tsData = apiWritekey;
-      //   tsData += "&field1=";
-      //   tsData += String(Irms_filtered); //
-      //   tsData += "&field2=";
-      //   tsData += String(temp_filtered); //
-      //   tsData += "&field3=";
-      //   tsData += String(acc_filtered);
-      //   tsData += "&field4=";
-      //   tsData += String(millis() * 0.001);
-      //   tsData += "&field5=";
-      //   tsData += String(Irms);
-      //   tsData += "&field6=";
-      //   tsData += String(temp); //
-      //   tsData += "&field7=";
-      //   tsData += String(acc); //
-      //   tsData += "\r\n\r\n";
-
-      //   client.print("POST /update HTTP/1.1\n");
-      //   client.print("Host: api.thingspeak.com\n");
-      //   client.print("Connection: close\n");
-      //   client.print("X-THINGSPEAKAPIKEY: " + String(apiWritekey) + "\n");
-      //   client.print("Content-Type: application/x-www-form-urlencoded\n");
-      //   client.print("Content-Length: ");
-      //   client.print(tsData.length());
-      //   client.print("\n\n");
-      //   client.print(tsData);
-      //   Serial.println("ThingSpeak data sent");
-      //   delay(250);
-      // }
-      // else
-      // {
-      // }
-      //client.stop();
+ 
     }
     else
     {
