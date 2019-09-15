@@ -6,6 +6,9 @@
 #include <Ticker.h>
 #include <jled.h>
 
+#include "elapsedMillis.h"
+
+
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -14,6 +17,10 @@ void debug_print(const char *location, const char *msg)
 {
   //Serial.printf(" %s: %s\n", location, msg);
 }
+
+//elapsedMillis check_notification_update_time;
+//elapsedMillis check_sensor_vibration_time;
+
 
 //debug_print(AT, "fake error");
  
@@ -79,6 +86,11 @@ enum LED_NOTIFIER_SENSOR_STATE
 	LED_NOTIFIER_SENSOR_STATE__CRITICAL 
 };
 
+enum BUZZER_PERIPHERAL
+{ 
+ BUZZER_PERIPHERAL_PIN=(D5) 
+};
+
 #define LED_CONFIG_TYPE (2) // (2)
  
 #if (LED_CONFIG_TYPE==1) 
@@ -97,11 +109,17 @@ enum LED_PERIPHERAL
  LED_PERIPHERAL_BLUE_1=(D3),
  LED_PERIPHERAL_BLUE_2=(D4),
  LED_PERIPHERAL_YELLOW=(D1),
- LED_PERIPHERAL_RED=(D2) 
+ LED_PERIPHERAL_RED=(D2),
+ BUZZER_PERIPHERAL_BUZZ=BUZZER_PERIPHERAL_PIN
+
 };
 #else
 #error "invalid led config type"
 #endif 
+
+
+
+
 
 enum LED_ID
 {
@@ -110,7 +128,8 @@ enum LED_ID
 	LED_ID_BLUE_2=(2),
 	LED_ID_YELLOW=(3),
 	LED_ID_RED=(4) ,
-	LED_ID_MAX=(LED_ID_RED+1) 
+	BUZZER_ID_BUZZ=(5),
+	LED_ID_MAX=(BUZZER_ID_BUZZ+1) 
 };
 
 
@@ -120,14 +139,14 @@ LED_WHITE_BREATHE_STATE led_white_breahe_state;
 JLed led_breathe_white[LED_WHITE_BREATHE_STATE__INVALID] =
 {
 		JLed(LED_PERIPHERAL_WHITE).Stop(), // Dummy
-		JLed(LED_PERIPHERAL_WHITE).Blink(50, 9950).Forever(), // LED_WHITE_BREATHE_STATE__OFFLINE
-		JLed(LED_PERIPHERAL_WHITE).Blink(10, 4950).Forever(), // LED_WHITE_BREATHE_STATE__NORMAL
+		JLed(LED_PERIPHERAL_WHITE).Blink( 50, 9950).Forever(), // LED_WHITE_BREATHE_STATE__OFFLINE
+		JLed(LED_PERIPHERAL_WHITE).Blink( 10, 4950).Forever(), // LED_WHITE_BREATHE_STATE__NORMAL
 		JLed(LED_PERIPHERAL_WHITE).Blink(5, 1950).Forever(),  //LED_WHITE_BREATHE_STATE__MID
 		JLed(LED_PERIPHERAL_WHITE).Blink(5, 150).Forever(),   //LED_WHITE_BREATHE_STATE__FAST
 		JLed(LED_PERIPHERAL_WHITE).Blink(5, 50).Forever()	 //LED_WHITE_BREATHE_STATE__VERY_FAST
 };
 
-Ticker flipper, flipper_white, flipper_blue_1, flipper_blue_2, flipper_yellow, flipper_red;
+Ticker flipper, flipper_white, flipper_blue_1, flipper_blue_2, flipper_yellow, flipper_red, flipper_buzzer;
 
 struct LED_STATE
 {
@@ -153,7 +172,8 @@ struct LED_STATE led_states[LED_ID_MAX] =
 		{LED_PERIPHERAL_BLUE_1, false, flipper_blue_1},
 		{LED_PERIPHERAL_BLUE_2, false, flipper_blue_2},
 		{LED_PERIPHERAL_YELLOW, false, flipper_yellow},
-		{LED_PERIPHERAL_RED, false, flipper_red}
+		{LED_PERIPHERAL_RED, false, flipper_red},
+		{BUZZER_PERIPHERAL_BUZZ, false, flipper_buzzer}
 };
 
 int count = 0;
@@ -167,6 +187,20 @@ void flip_d(const uint8_t led_id)
 	digitalWrite(led_states[led_id].LED_PERI, !pin_state); // set pin to the opposite state
 }
 
+// bool last_state=false means keep it off
+void ledDetach(LED_ID led_id, bool last_state=false)
+{
+		led_states[led_id].flipper.detach();
+		if(last_state)
+		{
+			digitalWrite(led_states[led_id].LED_PERI, 0); // active low 'ON'
+		}
+		else
+		{
+			digitalWrite(led_states[led_id].LED_PERI, 255); // active low 'ON' 
+		}
+	
+}
 // led_id and freq if last_state==true it sets the state as active low 'ON' 
 void ledState(LED_ID led_id, float freq, bool last_state=false)
 {
@@ -210,6 +244,11 @@ bool notifier_ledNotifierSetup()
 	pinMode(LED_PERIPHERAL_RED, OUTPUT);
 	digitalWrite(LED_PERIPHERAL_RED, HIGH);
 
+	pinMode(BUZZER_PERIPHERAL_PIN, OUTPUT);
+	digitalWrite(BUZZER_PERIPHERAL_PIN, LOW);
+
+	
+
 	// flip the pin every 0.3s
 	//flipper.attach(0.3, flip);
 
@@ -247,7 +286,7 @@ void notifier_ledNotifierLoop()
 		else
 		{
 			
-			led_breathe_white[led_white_breahe_state].Update();
+			led_breathe_white[led_white_breahe_state].LowActive().Update();
 
 		}
 		
@@ -256,10 +295,29 @@ void notifier_ledNotifierLoop()
 
 void setLedNotifierHBState(LED_NOTIFIER_HEARTBEAT_STATE _led_bh_state)
 { 
+
+	static LED_NOTIFIER_HEARTBEAT_STATE last_state;
+	static elapsedMillis check_notification_update_time;
+
+	if(last_state == _led_bh_state )
+	{
+		if (check_notification_update_time > notification_update_duration)
+		{
+			check_notification_update_time = 0;	
+		}	
+		else
+		{
+			DEBUG_LOG(".");
+			return;
+		}
+ 	}
+	last_state = _led_bh_state;	
+
     // Both the enums must be of same size
 	if(LED_WHITE_BREATHE_STATE__INVALID > (LED_WHITE_BREATHE_STATE)_led_bh_state)
 	{ 
-		ledState(LED_ID_WHITE, 0.0);  
+		//ledState(LED_ID_WHITE, 0.0);  
+		ledDetach(LED_ID_WHITE, false);
 		led_white_breahe_state = (LED_WHITE_BREATHE_STATE)_led_bh_state;
 		sprintf_P(getPrintBuffer(), "hb notify state :%d\n", led_white_breahe_state);
     	DEBUG_LOG(getPrintBuffer());
@@ -274,6 +332,22 @@ void setLedNotifierHBState(LED_NOTIFIER_HEARTBEAT_STATE _led_bh_state)
 
 void setLedNotofierCodeBurnState(LED_NOTIFIER_CODE_BURN_STATE _state)
 {
+	static LED_NOTIFIER_CODE_BURN_STATE last_state;
+	static elapsedMillis check_notification_update_time;
+
+	if(last_state == _state )
+	{
+		if (check_notification_update_time > notification_update_duration)
+		{
+			check_notification_update_time = 0;	
+		}	
+		else
+		{
+			DEBUG_LOG(".");
+			return;
+		}
+ 	}
+	last_state = _state;	
 
 	sprintf_P(getPrintBuffer(), "burn notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
@@ -306,6 +380,24 @@ void setLedNotofierCodeBurnState(LED_NOTIFIER_CODE_BURN_STATE _state)
 
 void setLedNotifierWIFIState(LED_NOTIFIER_WIFI_STATE _state)
 {  
+
+	static LED_NOTIFIER_WIFI_STATE last_state;
+	static elapsedMillis check_notification_update_time;
+
+	if(last_state == _state )
+	{
+		if (check_notification_update_time > notification_update_duration)
+		{
+			check_notification_update_time = 0;	
+		}	
+		else
+		{
+			DEBUG_LOG(".");
+			return;
+		}
+ 	}
+	last_state = _state;
+
 	sprintf_P(getPrintBuffer(), "wifi notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
@@ -341,6 +433,23 @@ void setLedNotifierWIFIState(LED_NOTIFIER_WIFI_STATE _state)
 
 void setLedNotifierServerState(LED_NOTIFIER_SERVER_STATE _state)
 {  
+    static LED_NOTIFIER_SERVER_STATE last_state;
+	static elapsedMillis check_notification_update_time;
+
+	if(last_state == _state )
+	{
+		if (check_notification_update_time > notification_update_duration)
+		{
+			check_notification_update_time = 0;	
+		}	
+		else
+		{
+			DEBUG_LOG(".");
+			return;
+		}
+ 	}
+	last_state = _state;
+
 
 	sprintf_P(getPrintBuffer(), "server notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
@@ -382,6 +491,25 @@ void setLedNotifierServerState(LED_NOTIFIER_SERVER_STATE _state)
 
 void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 {  
+
+	static LED_NOTIFIER_SENSOR_STATE last_state;
+	static elapsedMillis check_notification_update_time;
+
+	if(last_state == _state )
+	{
+		if (check_notification_update_time > notification_update_duration)
+		{
+			check_notification_update_time = 0;	
+		}	
+		else
+		{
+			DEBUG_LOG(".");
+			return;
+		}
+ 	}
+	last_state = _state;
+
+
 	sprintf_P(getPrintBuffer(), "sense notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
@@ -389,16 +517,20 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 	{
 		case LED_NOTIFIER_SENSOR_STATE__OK :
 			ledState(LED_ID_YELLOW, 0); //  need to change earlier yellow led state
-			ledState(LED_ID_RED, 0); // need to change earlier red led state
+			ledState(LED_ID_RED, 0); // need to change earlier red led state 
+			ledState(BUZZER_ID_BUZZ, 0.00000000001);
 
 			digitalWrite(led_states[LED_ID_YELLOW].LED_PERI, HIGH);// active low 'OFF'
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
+			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, LOW);// active high 'OFF'
 
 			break;
 		
 		case LED_NOTIFIER_SENSOR_STATE__NOTIFY :
 			ledState(LED_ID_YELLOW, 2.0);  
 			ledState(LED_ID_RED, 0);
+			ledState(BUZZER_ID_BUZZ, 0.5);
+
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 
 			break;
@@ -406,6 +538,7 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 		case LED_NOTIFIER_SENSOR_STATE__ALERT :
 			ledState(LED_ID_YELLOW, 4.0);
 			ledState(LED_ID_RED, 0);
+			ledState(BUZZER_ID_BUZZ, 1.0);
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 
 			break;			
@@ -413,11 +546,15 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 		case LED_NOTIFIER_SENSOR_STATE__WARN :
 			ledState(LED_ID_YELLOW, 8.0); 
 			ledState(LED_ID_RED, 2.0); 
+			ledState(BUZZER_ID_BUZZ, 2.0);
+
 			break;
 
 		case LED_NOTIFIER_SENSOR_STATE__EMERGENCY :
 			ledState(LED_ID_YELLOW, 8.0); 
 			ledState(LED_ID_RED, 4.0); 
+			ledState(BUZZER_ID_BUZZ, 4.0);
+
 			break;			 
 
 		case LED_NOTIFIER_SENSOR_STATE__CRITICAL :
@@ -426,6 +563,8 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 					
 			ledState(LED_ID_YELLOW, 0); //  need to change earlier yellow led state
 			ledState(LED_ID_RED, 0); // need to change earlier red led state
+			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, HIGH);// active low 'OFF'
+
 
 			digitalWrite(led_states[LED_ID_YELLOW].LED_PERI, LOW);// active low 'OFF'
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, LOW);// active low 'OFF'
@@ -442,7 +581,7 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 
 void notifier_setNotifierState(NOTIFIER_STATES _state)
 {
-
+ 
 	if(false == has_notifier_setup)
 	{
 		sprintf_P(getPrintBuffer(), "warn | notify state :has_notifier_setup: %d\n", has_notifier_setup);

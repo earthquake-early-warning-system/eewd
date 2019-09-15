@@ -737,3 +737,10 @@ otherfiles/iot_logger_php_server/imgs/logo.kra~
 .pio/libdeps/esp01/ESPAsyncTCP_ID305/ssl/server.cer
 .pio/libdeps/esp01/ESPAsyncTCP_ID305/ssl/server.key
 .pio/libdeps/esp01/ESPAsyncTCP_ID305/travis/common.sh
+.pio/build/esp01/lib47c/ESPAsyncTCP/ESPAsyncTCPbuffer.cpp.o
+.pio/build/esp01/lib47c/libESPAsyncTCP.a
+.pio/build/esp01/lib47c/ESPAsyncTCP/AsyncPrinter.cpp.o
+.pio/build/esp01/lib47c/ESPAsyncTCP/ESPAsyncTCP.cpp.o
+.pio/build/esp01/lib47c/ESPAsyncTCP/SyncClient.cpp.o
+.pio/build/esp01/lib47c/ESPAsyncTCP/tcp_axtls.c.o
+.pio/build/esp01/src/jumpers.cpp.o

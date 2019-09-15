@@ -391,7 +391,7 @@ _5_BUZZER_SENSOR_EMERGENCY // 1000 HZ SOUND with 2 HZ on off
 #define CURRENT_SUB_DEVICE (DISABLED)
 #define VIBRATION_SUB_DEVICE (ENABLED)
 
-const int sensor_vibration_update_duration = 2000;
+const int notification_update_duration = 15000;
 
 // const char *apiWritekey = "U6208ODGB0Q9SKJG";
 // const char *ssid = WIFISSID;     //"JioFi3_3FA858";

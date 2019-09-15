@@ -26,7 +26,7 @@ const char *HOST_NAME = "remotedebug-air_conditioner_energy";
 elapsedSeconds checkMPUStatus;
 elapsedSeconds checkTelnetTime, checkPrintTime;
 elapsedMillis checkThingSpeakTime;
-elapsedMillis check_sensor_vibration_time;
+//elapsedMillis check_notification_update_time;
 unsigned long last_time_thingspoke, last_time_telnet_talked;
 const int updateTelnetInterval = 1; // * 1000;
 
@@ -204,7 +204,17 @@ void loop()
 {
   whether_in_offline_mode = jumper_offline_mode_status();
 
-  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_PING);
+  {
+
+    if (whether_in_offline_mode)
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+    }
+    else
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_PING);
+    }
+  }
   notifier_ledNotifierLoop();
 
   unsigned long ts = millis(), dt_acc, dt_loop = micros();
@@ -246,9 +256,12 @@ void loop()
   {
     if (has_config_received == false)
     {
-
-      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
-
+      //    if (check_notification_update_time > notification_update_duration+1)
+      {
+        // being controlled by earlier part
+        // check_notification_update_time
+        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+      }
       sprintf(getPrintBuffer(), "No device config found. Synching...");
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
@@ -262,6 +275,7 @@ void loop()
   {
     //while(1)
     {
+      notifier_setNotifierState(_0_NOTIFIER_CODE_ERROR);
       notifier_ledNotifierLoop();
       delay(0);
     }
@@ -289,11 +303,11 @@ void loop()
 
 #if (VIBRATION_SUB_DEVICE == ENABLED)
 
-  if (checkMPUStatus >= 1)
-  {
-    checkMPUStatus = 0;
-    //status_mpu = mpu_scan();
-  }
+  // if (checkMPUStatus >= 1)
+  // {
+  //   checkMPUStatus = 0;
+  //   status_mpu = mpu_scan();
+  // }
   mpu_loop();
 
   temp = mpu_getTemp();
@@ -312,8 +326,6 @@ void loop()
 
   //processConfig();
 
-
-
   // config fixed
   if (true == whether_in_offline_mode)
   {
@@ -321,16 +333,16 @@ void loop()
 
     Device_config *config = config_lstnr->getDeviceConfigPtr();
 
+    // As per config0
     config->sensor_vibration_threshold_normal[0] = 0.1;
     config->sensor_vibration_threshold_alert[0] = 1.0;
-    config->sensor_vibration_threshold_warning[0] = 2.0;
-    config->sensor_vibration_threshold_critical[0] = 4.0; 
-
+    config->sensor_vibration_threshold_warning[0] = 3.0;
+    config->sensor_vibration_threshold_critical[0] = 5.0;
   }
 
-  if (check_sensor_vibration_time > sensor_vibration_update_duration)
+  //if (check_sensor_vibration_time > sensor_vibration_update_duration)
   {
-    check_sensor_vibration_time = 0;
+    //   check_sensor_vibration_time = 0;
 
     ConfigListener *config_lstnr = getJsonConfigListenerPtr();
 
@@ -360,25 +372,25 @@ void loop()
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
     }
-
   }
-  
+
   notifier_ledNotifierLoop();
 
   // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered
 
   ts = millis() - ts;
   dt_loop = micros() - dt_loop;
- 
 
   if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
   {
+    //checkMPUStatus = 1;
+    //status_mpu = mpu_scan();
     checkThingSpeakTime = 0;
 
     if (true == whether_in_offline_mode)
     {
-      WiFi.mode(WIFI_OFF); 
-      close_all_connections(); 
+      WiFi.mode(WIFI_OFF);
+      close_all_connections();
 
       sprintf(print_buffer, "offline mode");
       Serial.println(print_buffer);
@@ -440,7 +452,6 @@ void loop()
 #endif
 
       return;
- 
     }
     else
     {
