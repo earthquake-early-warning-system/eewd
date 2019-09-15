@@ -487,7 +487,7 @@ bool sendDataToServer(String data_str) //, struct Device_config *_config = NULL)
 
     if (status == true)
     {
-        //printDeviceConfig(device_config);
+        printDeviceConfig(device_config);
         //*_config = g_device_config_data;
         //printDeviceConfig(&g_device_config_data);
     }
