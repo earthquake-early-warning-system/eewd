@@ -10,7 +10,7 @@
 
 void ConfigListener::print(char *msg)
 {
-  Serial.println(msg);
+  //Serial.println(msg);
   syslog_debug(msg);
 }
 
@@ -90,6 +90,17 @@ void ConfigListener::value(String value)
   {
     // MAX_VER_STR_SIZE
     unsigned int valid_size =  value.length() > MAX_VER_STR_SIZE ? MAX_VER_STR_SIZE : value.length();
+    
+    //Issue
+    memset(device_config_.device_code_to_update_to,0,MAX_VER_STR_SIZE);
+    // from 
+    // v0.0.2-67-gaef2f66
+    // to
+    // v0.0.5-4-gb244a776
+    // xpctd 
+    // v0.0.5-4-gb244a77
+    //Issue
+
     strncpy(device_config_.device_code_to_update_to, value.c_str(), valid_size);
     //value.toCharArray(
     //    device_config_.device_code_to_update_to, valid_size);
