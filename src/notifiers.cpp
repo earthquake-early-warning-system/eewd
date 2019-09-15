@@ -135,6 +135,8 @@ enum LED_ID
 
 LED_WHITE_BREATHE_STATE led_white_breahe_state;
 
+// Must be in sync with enum LED_NOTIFIER_HEARTBEAT_STATE
+
 #define LED_WHITE_BREATHE_STATE_PLUS_ONE (1)
 JLed led_breathe_white[LED_WHITE_BREATHE_STATE__INVALID] =
 {
@@ -268,7 +270,7 @@ bool notifier_ledNotifierSetup()
 void notifier_ledNotifierLoop()
 {
 
-	return;
+	//return;
 
 	if(false == has_notifier_setup)
 	{
@@ -285,8 +287,8 @@ void notifier_ledNotifierLoop()
 			(led_white_breahe_state == LED_WHITE_BREATHE_STATE__OFF)
 		)
 		{
-			led_breathe_white[last_state].LowActive().Off().Stop();
-			led_breathe_white[led_white_breahe_state].LowActive().Off().Stop();
+			//led_breathe_white[last_state].LowActive().Off().Stop();
+			//led_breathe_white[led_white_breahe_state].LowActive().Off().Stop();
 		}
 		else
 		{
@@ -333,26 +335,26 @@ LED_WHITE_BREATHE_STATE__OFF, // LED OFF
   LED_WHITE_BREATHE_STATE__VERY_FAST
 
 */
-	switch (_led_bh_state)
-	{
-	case LED_WHITE_BREATHE_STATE__OFF:
-		ledState(LED_ID_WHITE, 0.0); 
-		break;
-	case LED_WHITE_BREATHE_STATE__OFFLINE:
-		ledState(LED_ID_WHITE, 0.1); 
-		break;
-	case LED_WHITE_BREATHE_STATE__NORMAL:
-		ledState(LED_ID_WHITE, 0.2); 
-		break;
-	case LED_WHITE_BREATHE_STATE__MID:
-		ledState(LED_ID_WHITE, 10); 
-		break;
+	// switch (_led_bh_state)
+	// {
+	// case LED_WHITE_BREATHE_STATE__OFF:
+	// 	ledState(LED_ID_WHITE, 0.0); 
+	// 	break;
+	// case LED_WHITE_BREATHE_STATE__OFFLINE:
+	// 	ledState(LED_ID_WHITE, 0.1); 
+	// 	break;
+	// case LED_WHITE_BREATHE_STATE__NORMAL:
+	// 	ledState(LED_ID_WHITE, 0.2); 
+	// 	break;
+	// case LED_WHITE_BREATHE_STATE__MID:
+	// 	ledState(LED_ID_WHITE, 10); 
+	// 	break;
 	
-	default:
-		break;
-	}
+	// default:
+	// 	break;
+	// }
 
-	return;
+	// return;
 
     // Both the enums must be of same size
 	if(LED_WHITE_BREATHE_STATE__INVALID > (LED_WHITE_BREATHE_STATE)_led_bh_state)
@@ -648,7 +650,7 @@ void notifier_setNotifierState(NOTIFIER_STATES _state)
 		break;
 
     case _0_NOTIFIER_CODE_ERROR :
-		setLedNotifierHBState(LED_HEARTBEAT_STATE__MID);
+		setLedNotifierHBState(LED_HEARTBEAT_STATE__FAST);
 		//ledState(LED_ID_WHITE, 10.0);
 		break;
 		 

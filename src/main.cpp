@@ -89,6 +89,10 @@ void setup()
   jumper_setup();
   whether_in_offline_mode = jumper_offline_mode_status();
 
+
+  bool status_notify = notifier_ledNotifierSetup();
+  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+
   if (whether_in_offline_mode)
   {
 
@@ -170,14 +174,10 @@ void setup()
   mpu_resetSampleTimer();
 #endif
 
-  bool status_notify = notifier_ledNotifierSetup();
-
   //Serial.printf_P("status_notify :%d", status_notify);
   sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
   syslog_warn(getPrintBuffer());
-
-  notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
-
+ 
   if (status_mpu == false)
   {
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
@@ -404,7 +404,7 @@ void loop()
   if (checkThingSpeakTime > updateThingSpeakInterval) // && samples.getCount() == samples.getSize())
   {
     //checkMPUStatus = 1;
-    //status_mpu = mpu_scan();
+    status_mpu = mpu_scan();
     checkThingSpeakTime = 0;
 
     if (status_mpu == false)
