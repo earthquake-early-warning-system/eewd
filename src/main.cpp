@@ -204,6 +204,15 @@ void loop()
 {
   whether_in_offline_mode = jumper_offline_mode_status();
 
+  if (status_mpu == false)
+  {
+    notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+    // sprintf(getPrintBuffer(), "MPU not intialized.");
+    // Serial.println(getPrintBuffer());
+    // syslog_warn(getPrintBuffer());
+  }
+  else
   {
 
     if (whether_in_offline_mode)
@@ -244,6 +253,15 @@ void loop()
       }
       //rd_loop();
     }
+  } 
+  
+  if(Serial.available())
+  {
+    char c = Serial.read();
+    if(c=='r')
+    {
+      ESP.reset();
+    }
   }
 
   if (is_safe_mode_active == true)
@@ -266,10 +284,12 @@ void loop()
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
       has_config_received = setup_php_server();
-      delay(1000);
+      //delay(1000);
       return;
     }
   }
+
+
 
   if (status_mpu == false)
   {
@@ -386,6 +406,15 @@ void loop()
     //checkMPUStatus = 1;
     //status_mpu = mpu_scan();
     checkThingSpeakTime = 0;
+
+    if (status_mpu == false)
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+
+      sprintf(getPrintBuffer(), "MPU not intialized.");
+      Serial.println(getPrintBuffer());
+      syslog_warn(getPrintBuffer());
+    }
 
     if (true == whether_in_offline_mode)
     {

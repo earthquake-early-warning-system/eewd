@@ -253,7 +253,7 @@ bool notifier_ledNotifierSetup()
 	//flipper.attach(0.3, flip);
 
 	led_white_breahe_state = LED_WHITE_BREATHE_STATE__OFFLINE;
-	//ledState(LED_ID_WHITE, 1.0);
+	ledState(LED_ID_WHITE, 0.1);
 
 	//Serial.println("notify setup");
 	has_notifier_setup = true;
@@ -268,6 +268,8 @@ bool notifier_ledNotifierSetup()
 void notifier_ledNotifierLoop()
 {
 
+	return;
+
 	if(false == has_notifier_setup)
 	{
 		return;
@@ -275,13 +277,16 @@ void notifier_ledNotifierLoop()
 
 	if (led_white_breahe_state != LED_WHITE_BREATHE_STATE__INVALID)
 	{
+		static LED_NOTIFIER_HEARTBEAT_STATE last_state;
+
 		if(
 			(led_white_breahe_state == LED_HEARTBEAT_STATE__OFF)
 			||
 			(led_white_breahe_state == LED_WHITE_BREATHE_STATE__OFF)
 		)
 		{
-			led_breathe_white[led_white_breahe_state].Stop();
+			led_breathe_white[last_state].LowActive().Off().Stop();
+			led_breathe_white[led_white_breahe_state].LowActive().Off().Stop();
 		}
 		else
 		{
@@ -289,6 +294,8 @@ void notifier_ledNotifierLoop()
 			led_breathe_white[led_white_breahe_state].LowActive().Update();
 
 		}
+
+		last_state = (LED_NOTIFIER_HEARTBEAT_STATE)led_white_breahe_state; 
 		
 	}
 }
@@ -312,6 +319,40 @@ void setLedNotifierHBState(LED_NOTIFIER_HEARTBEAT_STATE _led_bh_state)
 		}
  	}
 	last_state = _led_bh_state;	
+
+	sprintf_P(getPrintBuffer(), "hb notify state :%d\n", led_white_breahe_state);
+    DEBUG_LOG(getPrintBuffer());
+
+/*
+
+LED_WHITE_BREATHE_STATE__OFF, // LED OFF
+  LED_WHITE_BREATHE_STATE__OFFLINE,
+  LED_WHITE_BREATHE_STATE__NORMAL,
+  LED_WHITE_BREATHE_STATE__MID,
+  LED_WHITE_BREATHE_STATE__FAST,
+  LED_WHITE_BREATHE_STATE__VERY_FAST
+
+*/
+	switch (_led_bh_state)
+	{
+	case LED_WHITE_BREATHE_STATE__OFF:
+		ledState(LED_ID_WHITE, 0.0); 
+		break;
+	case LED_WHITE_BREATHE_STATE__OFFLINE:
+		ledState(LED_ID_WHITE, 0.1); 
+		break;
+	case LED_WHITE_BREATHE_STATE__NORMAL:
+		ledState(LED_ID_WHITE, 0.2); 
+		break;
+	case LED_WHITE_BREATHE_STATE__MID:
+		ledState(LED_ID_WHITE, 10); 
+		break;
+	
+	default:
+		break;
+	}
+
+	return;
 
     // Both the enums must be of same size
 	if(LED_WHITE_BREATHE_STATE__INVALID > (LED_WHITE_BREATHE_STATE)_led_bh_state)
@@ -607,8 +648,8 @@ void notifier_setNotifierState(NOTIFIER_STATES _state)
 		break;
 
     case _0_NOTIFIER_CODE_ERROR :
-		ledState(LED_ID_WHITE, 10.0);
-		//setLedNotifierHBState(LED_HEARTBEAT_STATE__NORMAL);
+		setLedNotifierHBState(LED_HEARTBEAT_STATE__MID);
+		//ledState(LED_ID_WHITE, 10.0);
 		break;
 		 
 	case _0_NOTIFIER_LOCAL_CODE_BURN_STARTED :

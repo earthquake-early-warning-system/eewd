@@ -301,7 +301,7 @@ bool sendToServer(String data_str, const char *_php_server, uint16_t _php_server
 
     http_wificlient.print(getStr);
 
-    sprintf(print_buffer, "http msg %s", getStr.c_str());
+    sprintf(print_buffer, "http msg \n\n%s", getStr.c_str());
     //Serial.println();
     Serial.println(print_buffer);
     syslog_debug(print_buffer);
@@ -487,7 +487,7 @@ bool sendDataToServer(String data_str) //, struct Device_config *_config = NULL)
 
     if (status == true)
     {
-        printDeviceConfig(device_config);
+        //printDeviceConfig(device_config);
         //*_config = g_device_config_data;
         //printDeviceConfig(&g_device_config_data);
     }
