@@ -12,6 +12,8 @@ void syslog_warn(char* msg);
 void syslog_error(char* msg);
 
 bool mpu_setup();
+bool mpu_scan();
+void mpu_loop();
 float mpu_getTempFiltered();
 float mpu_getTemp();
 float mpu_getAccelFftMagFiltered();
@@ -34,6 +36,7 @@ bool loop_OTA();
 void mpu_loop();
 
 bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
+void close_all_connections();
 
 ConfigListener * getJsonConfigListenerPtr();
 
@@ -44,5 +47,12 @@ void setDeviceMacStr();
 char * getDeviceMacStr();
 
 void sendGraphDate(char* _device_id, char *message);
+
+bool notifier_ledNotifierSetup();
+void notifier_setNotifierState(NOTIFIER_STATES _state);
+void notifier_ledNotifierLoop();
+
+void jumper_setup();
+bool jumper_offline_mode_status();
 
 #endif //COMMON_DEF_H

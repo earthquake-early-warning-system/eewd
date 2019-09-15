@@ -134,6 +134,11 @@ void mpu_resetSampleTimer()
   timer_mpu = millis();
 }
 
+bool mpu_scan()
+{
+  bool status = scanner_mpu.Scan(); // Followed by wire.begin
+  return status;
+}
 bool mpu_setup()
 {
   Serial.begin(115200);
@@ -302,39 +307,40 @@ void mpu_loop()
       //void sendGraphDate(char* _device_id, char *message) 
       
       elapsedTime = 0;
-      sprintf(print_buffer, "| MPU | dt %d smpl %2.4f %2.4f Hz %2.3f dB %2.1f", time_profile_mpu, samplingFrequency, valid_frequency_mpu, acc_fft_magnitude_mpu, temp_mpu);
+      sprintf(print_buffer, "| MPU | dt %d smpl %2.4f\t%2.4f Hz\t%2.3f\t(%2.3f) dB\t%2.1f", time_profile_mpu, samplingFrequency, valid_frequency_mpu, acc_fft_magnitude_double_filtered_mpu, acc_fft_magnitude_mpu, temp_mpu);
       syslog_debug(print_buffer);
 
-      Serial.print("| MPU | ");
-      Serial.print("dt ");
-      Serial.print(time_profile_mpu);
-      Serial.print(" dsr ");
-      Serial.print(dsr_mpu);
-      Serial.print(" Am ");
-      Serial.print(Am_mpu, 4);
+      Serial.println(print_buffer);
+      // ("| MPU | ");
+      // Serial.print("dt ");
+      // Serial.print(time_profile_mpu);
+      // Serial.print(" dsr ");
+      // Serial.print(dsr_mpu);
+      // Serial.print(" Am ");
+      // Serial.print(Am_mpu, 4);
 
-      Serial.print(" res ");
+      // Serial.print(" res ");
 
-      // number of sample per second for nyquist =  (dsr_mpu / (total sample duration) ) / 2
-      //
-      float temporary_time = ((double)time_division / 1000.0f); // The second
-      float total_samples = dsr_mpu / temporary_time;
-      float nyquist_samples = total_samples * 0.5;
-      Serial.print((nyquist_samples) / (samples_mpu * 0.5), 4); // (samples in a second divide by 2) / (fft points/2)
+      // // number of sample per second for nyquist =  (dsr_mpu / (total sample duration) ) / 2
+      // //
+      // float temporary_time = ((double)time_division / 1000.0f); // The second
+      // float total_samples = dsr_mpu / temporary_time;
+      // float nyquist_samples = total_samples * 0.5;
+      // Serial.print((nyquist_samples) / (samples_mpu * 0.5), 4); // (samples in a second divide by 2) / (fft points/2)
 
-      Serial.print(" Hz/bin [ Am freq ");
-      Serial.print(valid_frequency_mpu, 4);
-      Serial.print(" Hz, mag ");
-      Serial.print(acc_fft_magnitude_mpu);
+      // Serial.print(" Hz/bin [ Am freq ");
+      // Serial.print(valid_frequency_mpu, 4);
+      // Serial.print(" Hz, mag ");
+      // Serial.print(acc_fft_magnitude_mpu);
 
-      Serial.print(" dB ] Am filtered ");
-      Serial.print(acc_fft_magnitude_filtered_mpu, 4);
+      // Serial.print(" dB ] Am filtered ");
+      // Serial.print(acc_fft_magnitude_filtered_mpu, 4);
 
-      Serial.print(" Tm ");
-      Serial.print(temp_mpu, 2);
+      // Serial.print(" Tm ");
+      // Serial.print(temp_mpu, 2);
 
-      Serial.print(" Tm filtered ");
-      Serial.println(temp_filtered_mpu, 2);
+      // Serial.print(" Tm filtered ");
+      // Serial.println(temp_filtered_mpu, 2);
     }
 
     lsr_mpu = sr_mpu;
