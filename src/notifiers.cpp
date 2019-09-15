@@ -255,7 +255,7 @@ bool notifier_ledNotifierSetup()
 	//flipper.attach(0.3, flip);
 
 	led_white_breahe_state = LED_WHITE_BREATHE_STATE__OFFLINE;
-	ledState(LED_ID_WHITE, 0.1);
+	//ledState(LED_ID_WHITE, 0.1);
 
 	//Serial.println("notify setup");
 	has_notifier_setup = true;
@@ -404,13 +404,13 @@ void setLedNotofierCodeBurnState(LED_NOTIFIER_CODE_BURN_STATE _state)
 			//_0_NOTIFIER_HB_PING
 		
 		case LED_NOTIFIER_CODE_BURN_STATE__LOCAL :
-			ledState(LED_ID_WHITE, 2.0);  
-			//setLedNotifierHBState(LED_HEARTBEAT_STATE__OFF);
+			//ledState(LED_ID_WHITE, 2.0);  
+			setLedNotifierHBState(LED_HEARTBEAT_STATE__MID);
 			break;
 
 		case LED_NOTIFIER_CODE_BURN_STATE__REMOTE :
-			ledState(LED_ID_WHITE, 4.0);
-			//setLedNotifierHBState(LED_HEARTBEAT_STATE__OFF);
+			//ledState(LED_ID_WHITE, 4.0);
+			setLedNotifierHBState(LED_HEARTBEAT_STATE__MID);
 			break;			
 		
 		//  no further state required as the device will reset

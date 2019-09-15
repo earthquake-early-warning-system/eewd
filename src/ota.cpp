@@ -87,6 +87,7 @@ void setup_OTA()
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     isInProgramMode = true;
+    notifier_ledNotifierLoop();
     sprintf(getPrintBuffer(), "Progress local OTA: %u%%", (progress / (total / 100)));
     //Serial.println();
     Serial.println(getPrintBuffer());

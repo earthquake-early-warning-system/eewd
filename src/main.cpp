@@ -249,6 +249,7 @@ void loop()
     {
       if (loop_OTA())
       {
+        notifier_ledNotifierLoop();
         return;
       }
       //rd_loop();
