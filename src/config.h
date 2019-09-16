@@ -31,7 +31,7 @@
  }
 
 
- #define MAX_PRINT_BUFFER_SIZE (255)
+ #define MAX_PRINT_BUFFER_SIZE (128)
  static char print_buffer[MAX_PRINT_BUFFER_SIZE];// = {0};
 
  inline char * getPrintBuffer()

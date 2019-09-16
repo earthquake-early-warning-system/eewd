@@ -175,14 +175,14 @@ void setup()
 #endif
 
   //Serial.printf_P("status_notify :%d", status_notify);
-  sprintf_P(getPrintBuffer(), "status_notify :%d", status_notify);
+  snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "status_notify :%d", status_notify);
   syslog_warn(getPrintBuffer());
  
   if (status_mpu == false)
   {
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
-    sprintf(getPrintBuffer(), "MPU not intialized.");
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "MPU not intialized.");
     Serial.println(getPrintBuffer());
     syslog_warn(getPrintBuffer());
   }
@@ -208,7 +208,7 @@ void loop()
   {
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
-    // sprintf(getPrintBuffer(), "MPU not intialized.");
+    // snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "MPU not intialized.");
     // Serial.println(getPrintBuffer());
     // syslog_warn(getPrintBuffer());
   }
@@ -281,7 +281,7 @@ void loop()
         // check_notification_update_time
         notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
       }
-      sprintf(getPrintBuffer(), "No device config found. Synching...");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "No device config found. Synching...");
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
       has_config_received = setup_php_server();
@@ -310,7 +310,7 @@ void loop()
     {
       delay(0);
 
-      sprintf(getPrintBuffer(), "code updated resetting...");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "code updated resetting...");
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
 
@@ -412,7 +412,7 @@ void loop()
     {
       notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
-      sprintf(getPrintBuffer(), "MPU not intialized.");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "MPU not intialized.");
       Serial.println(getPrintBuffer());
       syslog_warn(getPrintBuffer());
     }

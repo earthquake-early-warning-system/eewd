@@ -33,7 +33,7 @@ bool updateFirmware(char*_version_firmware)
     bool status = false;
     String path_to_firmware = String(php_upgrade_server_file_target) + String("/") +String(_version_firmware)+".bin";
 
-    sprintf(getPrintBuffer(), "Getting firmware: %s", path_to_firmware.c_str());
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Getting firmware: %s", path_to_firmware.c_str());
     Serial.println(getPrintBuffer());
     syslog_debug(getPrintBuffer());
 
@@ -53,11 +53,11 @@ bool updateFirmware(char*_version_firmware)
     switch (ret)
     {
     case HTTP_UPDATE_FAILED:
-        sprintf(getPrintBuffer(), "%s", path_to_firmware.c_str());
+        snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "%s", path_to_firmware.c_str());
         Serial.println(getPrintBuffer());
         syslog_debug(getPrintBuffer());
 
-        sprintf(getPrintBuffer(), "HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+        snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
         Serial.println(getPrintBuffer());
         syslog_debug(getPrintBuffer());
 
@@ -72,7 +72,7 @@ bool updateFirmware(char*_version_firmware)
 
         status = true;
 
-        sprintf(getPrintBuffer(), "[update] Update ok. - time spent on update %d", time_spent_to_update);
+        snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "[update] Update ok. - time spent on update %d", time_spent_to_update);
 
         Serial.println(getPrintBuffer()); // may not called we reboot the ESP
         syslog_debug(getPrintBuffer());
@@ -95,7 +95,7 @@ bool processConfig()
 
     if (FW_UPDATE_AVAILABLE == config->whether_update_available[0])
     {
-        sprintf(getPrintBuffer(), "code update in progress (can take upto 5 minutes max)...");
+        snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "code update in progress (can take upto 5 minutes max)...");
         Serial.println(getPrintBuffer());
         syslog_debug(getPrintBuffer());
         delay(10);

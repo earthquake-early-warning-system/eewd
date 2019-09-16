@@ -259,7 +259,7 @@ bool notifier_ledNotifierSetup()
 
 	//Serial.println("notify setup");
 	has_notifier_setup = true;
-	sprintf_P(getPrintBuffer(), "status_notify :%d\n", has_notifier_setup);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "status_notify :%d\n", has_notifier_setup);
     DEBUG_LOG(getPrintBuffer());
 
 	
@@ -322,7 +322,7 @@ void setLedNotifierHBState(LED_NOTIFIER_HEARTBEAT_STATE _led_bh_state)
  	}
 	last_state = _led_bh_state;	
 
-	sprintf_P(getPrintBuffer(), "hb notify state :%d\n", led_white_breahe_state);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "hb notify state :%d\n", led_white_breahe_state);
     DEBUG_LOG(getPrintBuffer());
 
 /*
@@ -362,12 +362,12 @@ LED_WHITE_BREATHE_STATE__OFF, // LED OFF
 		//ledState(LED_ID_WHITE, 0.0);  
 		ledDetach(LED_ID_WHITE, false);
 		led_white_breahe_state = (LED_WHITE_BREATHE_STATE)_led_bh_state;
-		sprintf_P(getPrintBuffer(), "hb notify state :%d\n", led_white_breahe_state);
+		snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "hb notify state :%d\n", led_white_breahe_state);
     	DEBUG_LOG(getPrintBuffer());
 	}
 	else
 	{
-		sprintf_P(getPrintBuffer(), "Notifier: LED_WHITE_BREATHE_STATE__INVALID at %d\n", __LINE__);
+		snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Notifier: LED_WHITE_BREATHE_STATE__INVALID at %d\n", __LINE__);
 		Serial.printf(getPrintBuffer());
 		//syslog_warn(getPrintBuffer());
 	} 
@@ -392,7 +392,7 @@ void setLedNotofierCodeBurnState(LED_NOTIFIER_CODE_BURN_STATE _state)
  	}
 	last_state = _state;	
 
-	sprintf_P(getPrintBuffer(), "burn notify state :%d\n", _state);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "burn notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
 	switch (_state)
@@ -441,7 +441,7 @@ void setLedNotifierWIFIState(LED_NOTIFIER_WIFI_STATE _state)
  	}
 	last_state = _state;
 
-	sprintf_P(getPrintBuffer(), "wifi notify state :%d\n", _state);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "wifi notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
 	switch (_state)
@@ -494,7 +494,7 @@ void setLedNotifierServerState(LED_NOTIFIER_SERVER_STATE _state)
 	last_state = _state;
 
 
-	sprintf_P(getPrintBuffer(), "server notify state :%d\n", _state);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "server notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
 	switch (_state)
@@ -553,7 +553,7 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 	last_state = _state;
 
 
-	sprintf_P(getPrintBuffer(), "sense notify state :%d\n", _state);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "sense notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
 	switch (_state)
@@ -627,12 +627,12 @@ void notifier_setNotifierState(NOTIFIER_STATES _state)
  
 	if(false == has_notifier_setup)
 	{
-		sprintf_P(getPrintBuffer(), "warn | notify state :has_notifier_setup: %d\n", has_notifier_setup);
+		snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "warn | notify state :has_notifier_setup: %d\n", has_notifier_setup);
     	DEBUG_LOG(getPrintBuffer());
 		return;
 	}	
 
-	sprintf_P(getPrintBuffer(), "notify state :%d\n", _state);
+	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "notify state :%d\n", _state);
     DEBUG_LOG(getPrintBuffer());
 
 
