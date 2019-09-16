@@ -21,20 +21,20 @@ Device_config * ConfigListener::getDeviceConfigPtr()
 
 void ConfigListener::whitespace(char c)
 {
-  //sprintf(getPrintBuffer(), "whitespace %c", c);
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "whitespace %c", c);
   //this->print(getPrintBuffer());
 }
 
 void ConfigListener::startDocument()
 {
-  //sprintf(getPrintBuffer(), "start document");
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "start document");
   //this->print(getPrintBuffer());
 }
 
 void ConfigListener::key(String key)
 {
   this->current_key_ = key;
-  //sprintf(getPrintBuffer(), "key: %s", key.c_str());
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "key: %s", key.c_str());
   //this->print(getPrintBuffer());
 }
 
@@ -54,12 +54,12 @@ void ConfigListener::value(String value)
 
   if (index == -1)
   {
-    sprintf(getPrintBuffer(), "cjsp: %d | No valid key received.", __LINE__);
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE,"cjsp: %d | No valid key received.",   __LINE__);
     this->print(getPrintBuffer());
     return;
   }
 
-  sprintf(getPrintBuffer(), " key: %s value: %s", Device_config_ToString(index), value.c_str());
+  snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, " key: %s value: %s", Device_config_ToString(index), value.c_str());
   this->print(getPrintBuffer());
 
   switch (index)
@@ -107,7 +107,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_VER_STR_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -124,7 +124,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_MINI_STR_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -140,7 +140,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_PATH_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -163,7 +163,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_PATH_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -179,7 +179,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_PATH_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -202,7 +202,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_PATH_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -218,7 +218,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_VER_STR_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -234,7 +234,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_VER_STR_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -439,7 +439,7 @@ void ConfigListener::value(String value)
 
     if (value.length() > MAX_PATH_SIZE)
     {
-      sprintf(getPrintBuffer(), "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | %s | Possible data truncation.", __LINE__, Device_config_ToString(index));
       this->print(getPrintBuffer());
     }
   }
@@ -447,7 +447,7 @@ void ConfigListener::value(String value)
 
   default:
   {
-    sprintf(getPrintBuffer(), "cjsp: %d | (?? %s ??) | Wrong key received.", __LINE__, Device_config_ToString(index));
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "cjsp: %d | (?? %s ??) | Wrong key received.", __LINE__, Device_config_ToString(index));
     this->print(getPrintBuffer());
   }
   }
@@ -460,30 +460,30 @@ void ConfigListener::value(String value)
 
 void ConfigListener::endArray()
 {
-  //sprintf(getPrintBuffer(), "end array. ");
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "end array. ");
   //this->print(getPrintBuffer());
 }
 
 void ConfigListener::endObject()
 {
-  //sprintf(getPrintBuffer(), "end object. ");
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "end object. ");
   //this->print(getPrintBuffer());
 }
 
 void ConfigListener::endDocument()
 {
-  sprintf(getPrintBuffer(), "end document. ");
+  snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "end document. ");
   this->print(getPrintBuffer());
 }
 
 void ConfigListener::startArray()
 {
-  //sprintf(getPrintBuffer(), "start array. ");
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "start array. ");
   //this->print(getPrintBuffer());
 }
 
 void ConfigListener::startObject()
 {
-  //sprintf(getPrintBuffer(), "start object. ");
+  //snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "start object. ");
   //this->print(getPrintBuffer());
 }

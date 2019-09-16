@@ -71,7 +71,7 @@ void setup_OTA()
 
     // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
     //Serial.println("Start updating ?" + type);
-    sprintf(getPrintBuffer(), "Start local OTA update ... ?");
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Start local OTA update ... ?");
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_LOCAL_CODE_BURN_STARTED);
     //Serial.println();
     Serial.println(getPrintBuffer());
@@ -80,7 +80,7 @@ void setup_OTA()
   ArduinoOTA.onEnd([]() {
     isInProgramMode = false;
     //Serial.println("\nEnd");
-    sprintf(getPrintBuffer(), "Ended local OTA update.");
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Ended local OTA update.");
     //Serial.println();
     Serial.println(getPrintBuffer());
     syslog_debug(getPrintBuffer());
@@ -88,7 +88,7 @@ void setup_OTA()
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     isInProgramMode = true;
     notifier_ledNotifierLoop();
-    sprintf(getPrintBuffer(), "Progress local OTA: %u%%", (progress / (total / 100)));
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Progress local OTA: %u%%", (progress / (total / 100)));
     //Serial.println();
     Serial.println(getPrintBuffer());
     syslog_debug(getPrintBuffer());
@@ -98,28 +98,28 @@ void setup_OTA()
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
 
     isInProgramMode = false;
-    sprintf(getPrintBuffer(), "Error[%u]: ", error);
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Error[%u]: ", error);
     //Serial.println();
     Serial.println(getPrintBuffer());
     syslog_debug(getPrintBuffer());
     //Serial.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR)
-      sprintf(getPrintBuffer(), "Auth Failed");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Auth Failed");
     else if (error == OTA_BEGIN_ERROR)
-      sprintf(getPrintBuffer(), "Begin Failed");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Begin Failed");
     else if (error == OTA_CONNECT_ERROR)
-      sprintf(getPrintBuffer(), "Connect Failed");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Connect Failed");
     else if (error == OTA_RECEIVE_ERROR)
-      sprintf(getPrintBuffer(), "Receive Failed");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Receive Failed");
     else if (error == OTA_END_ERROR)
-      sprintf(getPrintBuffer(), "End Failed");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "End Failed");
 
     Serial.println(getPrintBuffer());
     syslog_debug(getPrintBuffer());
   });
   ArduinoOTA.begin();
   isSetupOK = true;
-  sprintf(getPrintBuffer(), "Ready | IP address: %s | In ubutnu please run following command to configure firewall => $ sudo ufw allow from %s", WiFi.localIP().toString().c_str(), WiFi.localIP().toString().c_str());
+  snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Ready | IP address: %s | In ubutnu please run following command to configure firewall => $ sudo ufw allow from %s", WiFi.localIP().toString().c_str(), WiFi.localIP().toString().c_str());
   //Serial.println();
   Serial.println(getPrintBuffer());
   syslog_debug(getPrintBuffer());

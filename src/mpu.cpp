@@ -201,7 +201,7 @@ void mpu_loop()
       }
       else
       {
-        sprintf(getPrintBuffer(), "******* |  MPU | buffer empty. ********");
+        snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "******* |  MPU | buffer empty. ********");
         syslog_warn(getPrintBuffer());
         Serial.println(getPrintBuffer());
 
@@ -297,7 +297,7 @@ void mpu_loop()
     if(elapsed_time > (elapsedMillis)(sampling_duration_us/2000.0) )//(1000/5) )
     {
       elapsed_time = 0;
-      sprintf(getPrintBuffer(), "%2.4f, %2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu, acc_fft_magnitude_double_filtered_mpu);
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "%2.4f, %2.4f, %2.4f, %2.4f, %2.4f", Am_mpu, am_ft / mag_multiflier, acc_fft_magnitude_mpu, acc_fft_magnitude_filtered_mpu, acc_fft_magnitude_double_filtered_mpu);
       sendGraphDate((char*)String(getJsonConfigListenerPtr()->getDeviceConfigPtr()->device_id[0]).c_str(), getPrintBuffer()); 
     }    
 

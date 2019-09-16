@@ -227,7 +227,7 @@
          if(mysqli_query($conn, $sqlQuery))
          {   
             echo "Affected number of configs: " . mysqli_affected_rows($conn);
-            echo "Success";
+            echo "<br>Success";
             echo "<font color='red'> All the devices with related config ids will be updated soon.</font>";
          }
          else
