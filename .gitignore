@@ -744,3 +744,11 @@ otherfiles/iot_logger_php_server/imgs/logo.kra~
 .pio/build/esp01/lib47c/ESPAsyncTCP/SyncClient.cpp.o
 .pio/build/esp01/lib47c/ESPAsyncTCP/tcp_axtls.c.o
 .pio/build/esp01/src/jumpers.cpp.o
+.pio/build/esp01/EspExceptionDecoder.class
+.pio/build/esp01/EspExceptionDecoder.jar
+.pio/build/esp01/EspExceptionDecoder.java
+.pio/build/esp01/EspExceptionDecoder.txt
+.pio/build/esp01/EspExceptionDecoder$1.class
+.pio/build/esp01/EspExceptionDecoder$2.class
+.pio/build/esp01/ex.txt
+.pio/build/esp01/firmware.txt
