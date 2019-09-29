@@ -52,7 +52,8 @@ if($device_id > 0 )//!empty($output['device_id']))
 }
 else
 {
-    echo nl2br("Warning: Inform device admin. Device data will not be saved.");
+    echo ("<hr>");
+    echo nl2br("Warning: Inform device admin. Table not created. Device data will not be saved.");
     echo "Error: Invalid input parameter as well.";
 }
 
