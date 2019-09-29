@@ -13,6 +13,7 @@
 
 #include <elapsedMillis.h>
 
+ 
 
 //#define USE_K_FILTER
 
@@ -305,9 +306,11 @@ void mpu_loop()
     {
 
       //void sendGraphDate(char* _device_id, char *message) 
-      
+       
       elapsedTime = 0;
-      sprintf(print_buffer, "| MPU | dt %d smpl %2.4f\t%2.4f Hz\t%2.3f\t(%2.3f) dB\t%2.1f", time_profile_mpu, samplingFrequency, valid_frequency_mpu, acc_fft_magnitude_double_filtered_mpu, acc_fft_magnitude_mpu, temp_mpu);
+      sprintf(print_buffer, "| MPU | dt %d smpl %2.4f \t %2.4f Hz \t vv %2.3f vv \t (%2.3f) dB \t %2.1f"
+      , time_profile_mpu, samplingFrequency, valid_frequency_mpu
+      , acc_fft_magnitude_double_filtered_mpu, acc_fft_magnitude_mpu, temp_mpu);
       syslog_debug(print_buffer);
 
       Serial.println(print_buffer);

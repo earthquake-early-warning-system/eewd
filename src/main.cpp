@@ -96,7 +96,7 @@ void setup()
   if (whether_in_offline_mode)
   {
 
-    WiFi.mode(WIFI_OFF);
+    //WiFi.mode(WIFI_OFF);
 
     Serial.print("offline mode turned off wifi.");
     syslog_info("offline mode turned off wifi."); // worthless
@@ -203,7 +203,7 @@ unsigned long sr, ts_acc;
 void loop()
 {
   whether_in_offline_mode = jumper_offline_mode_status();
-
+ 
   if (status_mpu == false)
   {
     notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
@@ -314,7 +314,7 @@ void loop()
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
 
-      delay(1000);
+      delay(10);
 
       ESP.reset();
     }
@@ -419,49 +419,77 @@ void loop()
 
     if (true == whether_in_offline_mode)
     {
-      WiFi.mode(WIFI_OFF);
+      //WiFi.mode(WIFI_OFF);
       close_all_connections();
 
-      sprintf(print_buffer, "offline mode");
+      snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "offline mode");
       Serial.println(print_buffer);
       syslog_info(print_buffer);
 
       return;
     }
     //last_time_thingspoke = millis();
-    sprintf(print_buffer, "data sending time");
+    snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "data sending time");
     Serial.println(print_buffer);
     syslog_info(print_buffer);
 
-    long time_wifi_check = millis();
-    while (WiFi.status() != WL_CONNECTED)
+    //long time_wifi_check = millis();
+    if (WiFi.status() != WL_CONNECTED)
     {
+      close_all_connections();
       notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONN_FAILED);
+  
+      whether_in_offline_mode = true;
+      notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
 
-      Serial.print(".");
-      delay(250);
-
-      if (millis() - time_wifi_check > 60000)
-      {
-        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
-        Serial.println("Resetting the device as not connecting to configured wifi settings...");
-        delay(2000);
-        Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
-        delay(2000);
-        Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
-        delay(2000);
-        ESP.reset();
-      }
+      snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "offline mode");
+      Serial.println(print_buffer);
+      syslog_info(print_buffer);
+  
+      // while (millis() - time_wifi_check > 60000)
+      // {
+      //   notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
+      //   Serial.println("Resetting the device as not connecting to configured wifi settings...");
+      //   delay(2000);
+      //   Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
+      //   delay(2000);
+      //   Serial.println("Repeat: Resetting the device as not connecting to configured wifi settings...");
+      //   delay(2000);
+      //   ESP.reset();
+      // }
     }
+    // else
+    // {
+    //   whether_in_offline_mode = false;
+    //   notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_PING);
+
+    // }
 
     if (WiFi.status() == WL_CONNECTED)
     {
       notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
 
       sr++;
-      loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+      bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
 
-      sprintf(print_buffer, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
+      if(status_server==false)
+      {
+        whether_in_offline_mode = true;
+        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+        snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Switched to offline mode");
+        Serial.println();
+        Serial.println(print_buffer);
+        syslog_info(print_buffer);
+      } 
+      else
+      {
+        snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, " Switched to online mode");
+        Serial.println(print_buffer);
+        syslog_info(print_buffer);
+      }
+      
+
+      snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
       Serial.println();
       Serial.println(print_buffer);
       syslog_info(print_buffer);

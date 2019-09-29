@@ -13,7 +13,7 @@ enum JUMPER_PERIPHERAL
 void jumper_setup()
 { 
 	pinMode(JUMPER_PERIPHERAL__OFFLINE_MODE, INPUT); //INPUT_PULLUP
-	digitalWrite(JUMPER_PERIPHERAL__OFFLINE_MODE, HIGH);
+	digitalWrite(JUMPER_PERIPHERAL__OFFLINE_MODE, HIGH); //pulled up
 }
 
 bool jumper_offline_mode_status()

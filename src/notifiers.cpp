@@ -567,6 +567,9 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, LOW);// active high 'OFF'
 
+			snprintf_P(getPrintBuffer(), 15, "SENSE NORMAL @");
+			syslog_info(getPrintBuffer());
+
 			break;
 		
 		case LED_NOTIFIER_SENSOR_STATE__NOTIFY :
@@ -576,6 +579,9 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 
+			snprintf_P(getPrintBuffer(), 15, "SENSE NOTIFY @");
+			syslog_info(getPrintBuffer());
+
 			break;
 
 		case LED_NOTIFIER_SENSOR_STATE__ALERT :
@@ -584,6 +590,10 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			ledState(BUZZER_ID_BUZZ, 1.0);
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 
+			snprintf_P(getPrintBuffer(), 14, "SENSE ALERT @");
+			syslog_info(getPrintBuffer());
+
+
 			break;			
 
 		case LED_NOTIFIER_SENSOR_STATE__WARN :
@@ -591,12 +601,18 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			ledState(LED_ID_RED, 2.0); 
 			ledState(BUZZER_ID_BUZZ, 2.0);
 
+			snprintf_P(getPrintBuffer(), 13, "SENSE WARN @");
+			syslog_info(getPrintBuffer());
+
 			break;
 
 		case LED_NOTIFIER_SENSOR_STATE__EMERGENCY :
 			ledState(LED_ID_YELLOW, 8.0); 
 			ledState(LED_ID_RED, 4.0); 
 			ledState(BUZZER_ID_BUZZ, 4.0);
+
+			snprintf_P(getPrintBuffer(), 18, "SENSE EMERGENCY @");
+			syslog_info(getPrintBuffer());
 
 			break;			 
 
@@ -612,6 +628,8 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			digitalWrite(led_states[LED_ID_YELLOW].LED_PERI, LOW);// active low 'OFF'
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, LOW);// active low 'OFF'
 
+			snprintf_P(getPrintBuffer(), 17, "SENSE CRITICAL @");
+			syslog_info(getPrintBuffer());
 			
 			break;			 
 
