@@ -47,4 +47,10 @@ $device_id = -1;
 
 $debug=0;
 
+// database credentials
+$db_name="id11067136_eews";
+$db_user="id11067136_eews";
+$db_pwd ="r@A7kLH8TtA4NFB";
+$db_host="localhost";
+
 ?>

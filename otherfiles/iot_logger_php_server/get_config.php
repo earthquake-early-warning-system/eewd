@@ -69,7 +69,7 @@ if(!empty($output['device_code_version']))
    // print_r($input_str_array);
 }
 
-$conn = mysqli_connect("localhost","id10062120_devices_logging","jUv2SjiYGhB8pkA","id10062120_devices");
+$conn = mysqli_connect($db_host,$db_user,$db_pwd,$db_name);
 
 if(!empty($output['Device_mac_id_str']))
 {

@@ -155,8 +155,8 @@ catch(PDOException $e) {
 }
 */
 
-$conn = mysqli_connect("localhost","id10062120_devices_logging","jUv2SjiYGhB8pkA","id10062120_devices");
-
+$conn = mysqli_connect($db_host,$db_user,$db_pwd,$db_name);
+    
 $sqlQuery = "INSERT INTO `device".$device_id."` ( `sr`, `dt`, `time`, `uptm`, `temp_filter`, `temp_raw`, `curr_filter`, `curr_raw`, `accel_filter`, `accel_raw`) VALUES (" 
 .$sr
 .','.strval($dt_str)

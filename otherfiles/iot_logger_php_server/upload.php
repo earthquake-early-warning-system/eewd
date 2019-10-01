@@ -75,7 +75,10 @@
                             <tr>
                                 <th>Selection</th>
                                 <?php 
-                                $conn = mysqli_connect("localhost","id10062120_devices_logging","jUv2SjiYGhB8pkA","id10062120_devices");
+                                include "./variables.php";
+
+                                $conn = mysqli_connect($db_host,$db_user,$db_pwd,$db_name);
+
                                 $sqlQuery = "SELECT * FROM `device_config` WHERE `config_id`!=0";
                                 // INSERT INTO `device_info`(`Device_mac_id_str`, `Device_code_type`,`Device_location_gps`) VALUES (0,'DEVT',0.0)
                                 $result = mysqli_query($conn,$sqlQuery);  

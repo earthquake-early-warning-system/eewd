@@ -7,8 +7,8 @@ include "./variables.php";
 if($device_id > 0 )//!empty($output['device_id']))
 {
 	// $device_id = $output['device_id'];		
-  
-    $conn = mysqli_connect("localhost","id10062120_devices_logging","jUv2SjiYGhB8pkA","id10062120_devices");
+    
+    $conn = mysqli_connect($db_host,$db_user,$db_pwd,$db_name);
     
     // Check table existence
     $val = mysqli_query($conn, "select 1 from `device".$device_id."` LIMIT 1");

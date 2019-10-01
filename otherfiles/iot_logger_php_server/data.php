@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-
+include "./variables.php";
 
 // If uncommented the gui will not load 
 // As it requires to be publish only the data
@@ -35,7 +35,7 @@ if(!empty($_POST['device_id']))
 	}
 
 
-	$conn = mysqli_connect("localhost","id10062120_devices_logging","jUv2SjiYGhB8pkA","id10062120_devices");
+	$conn = mysqli_connect($db_host,$db_user,$db_pwd,$db_name);
 
 	$sqlQuery = "SELECT * FROM `device".$device_id."` ORDER BY time DESC LIMIT 20";
 

@@ -1,6 +1,8 @@
 <?php
 header('Content-Type: application/json');
  
+include "./variables.php";
+	
 if(!isset($_POST['debug']))
 {
 	$debug = $_POST['debug'];	
@@ -20,8 +22,8 @@ if(!empty($_POST['device_id']))
 	}
 
 
-	$conn = mysqli_connect("localhost","id10062120_devices_logging","jUv2SjiYGhB8pkA","id10062120_devices");
-
+	$conn = mysqli_connect($db_host,$db_user,$db_pwd,$db_name);
+                                
 	$sqlQuery = "SELECT * FROM `device".$device_id."` ORDER BY `data_id` DESC LIMIT 1" ; //`time` DESC LIMIT 1";
 	
 	$result = mysqli_query($conn,$sqlQuery);

@@ -15,6 +15,21 @@
 #define FW_UPDATE_AVAILABLE (1)
 //#define FW_UPDATE_UNAVAILABLE (0)
 
+
+static char * color_for_mpu_console;
+inline char* getMpuColorPtr()
+{
+    return color_for_mpu_console;
+}
+
+inline void setMpuColorPtr(char * _char_ptr)
+{
+    color_for_mpu_console = _char_ptr;
+}
+
+
+
+
 // Four char 
 // Development, Observation, Production, Mass-Deployable 
 #define DEVICE_DEVELOPMENT_TYPE "DEVT" //  ("OBSN") ("PROD") ("DEPL")
@@ -55,7 +70,7 @@
 #define MAX_MINI_STR_SIZE (8)
 #define MAX_SINGLE_CHAR_SIZE (1)
 
-#define SYSLOG_SERVER_ADDRESS ("192.168.43.71") //("10.42.0.1") //("192.168.43.71")
+#define SYSLOG_SERVER_ADDRESS ("192.168.43.71") //("10.42.0.1") //
 #define SYSLOG_DEVICE_NAME ("EEWD")
 //#define SYSLOG_DEVICE_IDENTIFICATION ()
 
@@ -405,17 +420,17 @@ const int updateThingSpeakInterval = 5000; //* 1000; // Time interval in millise
 
 /// Local php server
 
-#define php_server ("device1-eews.000webhostapp.com" )//"192.168.43.227")
+#define php_server ("eews.000webhostapp.com" )//"192.168.43.227")
 #define php_server_port (80) //8000)
 #define php_server_file_target ("/devices/insert_new_data.php?")
 //const char *php_server_response ("New record created successfully.")
 
-#define php_config_server ("device1-eews.000webhostapp.com" )//"192.168.43.227")
+#define php_config_server ("eews.000webhostapp.com" )//"192.168.43.227")
 #define php_config_server_port (80) //8000)
 #define php_config_server_file_target ("/devices/get_config.php?")
 //const char *php_server_response ("New record created successfully.")
 
-#define php_upgrade_server ("device1-eews.000webhostapp.com" )//"192.168.43.227")
+#define php_upgrade_server ("eews.000webhostapp.com" )//"192.168.43.227")
 #define php_upgrade_server_port (80) //8000)
 #define php_upgrade_server_file_target (STRCAT(UPDATE_PATH, DEVICE_DEVELOPMENT_TYPE))
 #define php_upgrade_server_status ("/devices/updated.php?")

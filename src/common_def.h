@@ -55,4 +55,8 @@ void notifier_ledNotifierLoop();
 void jumper_setup();
 bool jumper_offline_mode_status();
 
+char* getMpuColorPtr();
+void setMpuColorPtr(char * _char_ptr);
+
+
 #endif //COMMON_DEF_H
