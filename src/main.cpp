@@ -24,7 +24,7 @@ extern "C"
 const char *HOST_NAME = "remotedebug-air_conditioner_energy";
 
 elapsedSeconds checkMPUStatus;
-elapsedSeconds checkTelnetTime, checkPrintTime;
+elapsedSeconds checkTelnetTime, checkPrintTime, checkForcedDataSendTime;
 elapsedMillis checkThingSpeakTime;
 //elapsedMillis check_notification_update_time;
 unsigned long last_time_thingspoke, last_time_telnet_talked;
@@ -200,6 +200,8 @@ void setup()
 bool last_state = false;
 unsigned long sr, ts_acc;
 
+bool high_vibration_sensed = false;
+
 void loop()
 {
   whether_in_offline_mode = jumper_offline_mode_status();
@@ -369,6 +371,16 @@ void loop()
 
     Device_config *config = config_lstnr->getDeviceConfigPtr();
 
+    if(acc_filtered > worth_data_sending_sensor_threshold )
+    {
+      high_vibration_sensed = true;
+    }
+    else
+    {
+      high_vibration_sensed = false;
+    }
+    
+
     if (acc_filtered < config->sensor_vibration_threshold_normal[0])
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
@@ -469,24 +481,47 @@ void loop()
     {
       notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
 
-      sr++;
-      bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+      bool force_data_send = checkForcedDataSendTime >= force_data_send_duration_seconds; // 15 minutes
+      static bool first_data_must_be_sent = true;
 
-      if(status_server==false)
-      {
-        whether_in_offline_mode = true;
-        notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
-        snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Switched to offline mode");
-        Serial.println();
-        Serial.println(print_buffer);
-        syslog_info(print_buffer);
-      } 
+      if((high_vibration_sensed==true) || (force_data_send==true) || (first_data_must_be_sent==true))
+      { 
+        first_data_must_be_sent = false;
+        checkForcedDataSendTime = 0; 
+        sr++;
+        bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+
+        if(status_server==false)
+        {
+          whether_in_offline_mode = true;
+          notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_HB_OFFLINE_MODE);
+          snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Switched to offline mode");
+          Serial.println();
+          Serial.println(print_buffer);
+          syslog_info(print_buffer);
+        } 
+        else
+        {
+          snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, " Switched to online mode");
+          Serial.println(print_buffer);
+          syslog_info(print_buffer);
+        }
+
+        if(force_data_send==true)
+        {
+          snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, " Periodic data sending.");
+          Serial.println(print_buffer);
+          syslog_info(print_buffer);
+        }
+      }
       else
       {
-        snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, " Switched to online mode");
+        snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, " Not enough vibration sensed worth sending.");
         Serial.println(print_buffer);
         syslog_info(print_buffer);
       }
+      
+
       
 
       snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
