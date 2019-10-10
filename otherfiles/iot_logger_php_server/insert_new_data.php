@@ -46,6 +46,11 @@ if(!empty($_SERVER['QUERY_STRING']))
 } 
 
 //print_r($output);
+
+if(!empty($output['debug']))
+{
+	$debug = $output['debug'];	
+}
    
 if(!empty($output['sr']))
 {
@@ -80,9 +85,16 @@ if(!empty($output['curr_raw']))
 {
 	$curr_raw = $output['curr_raw'];		
 } 
+
+$accel_dB=0.0;
 if(!empty($output['accel_filter']))
 {
-	$accel_filter = $output['accel_filter'];		
+	$accel_filter = $output['accel_filter'];
+	$accel_dB =	$accel_filter;
+	if($debug==1)
+	{
+		echo " accel_filter= $accel_filter";
+	}	
 }
 if(!empty($output['accel_raw']))
 {
@@ -191,6 +203,27 @@ if ($result) {
 	mysqli_close($conn);
 
 	include "get_config.php";
+
+	function send($message)
+	{
+		$text = trim($message);
+
+		if (strlen(trim($text)) > 0) {
+			$send = "https://api.telegram.org/bot944311541:AAEVwABoc7lVTDv4XkdF7kGhcCkzPS2q3A0/sendmessage?parse_mode=html&chat_id=-281731305&text=" . urlencode($text);
+			file_get_contents($send);  
+		}
+
+	}
+
+	if($debug==1)
+	{
+		echo " accel_filter= $accel_filter, $accel_dB";
+	}
+
+	if($sensor_vibration_threshold_normal<=(float)$accel_dB)
+	{
+		send("TEST\n\nEarthquake detected.\nThe magnitude is ".number_format((float)$accel_dB,3,'.','')." dB of vibration.\nMin threshold is ".number_format($sensor_vibration_threshold_normal,3,'.',''). " dB." );
+	}
 
 	//$content = ob_get_contents();
 

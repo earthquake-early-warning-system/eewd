@@ -139,7 +139,7 @@ else
                     //print_r($row);
                     $device_id=$row['Device_id'];
                     $config_id=$row['Device_config_id'];
-
+                     
                     $device_code_version=$row['Device_code_version'];
                     $device_code_version = ltrim($device_code_version, 'v'); // v0.0.3-3-g53a0111 => 0.0.3-3-g53a0111
                     $db_str_array = explode ("-", $device_code_version); // 0.0.0-3-* => 0.0.0, 3, g53a0111
@@ -178,7 +178,7 @@ if($device_id > 0)
 
     if($config_type==='s')
     {
-        $sqlQuery = "SELECT `config_id` ,`whether_update_available` ,`device_code_to_update_to` ,`server_host_address_config` ,`server_host_port_config` ,`host_config_server_query_path` FROM `device_config` WHERE device_code_type='".$device_code_type."' AND config_id=".$config_id." LIMIT 1" ; //`time` DESC LIMIT 1"
+        $sqlQuery = "SELECT `config_id` ,`whether_update_available` ,`device_code_to_update_to` , `sensor_vibration_threshold_normal`, `server_host_address_config` ,`server_host_port_config` ,`host_config_server_query_path` FROM `device_config` WHERE device_code_type='".$device_code_type."' AND config_id=".$config_id." LIMIT 1" ; //`time` DESC LIMIT 1"
     } 
     else if($config_type==='l') 
     {
@@ -218,6 +218,8 @@ if($device_id > 0)
                     $db_str_array = explode ("-", $device_code_version); // 0.0.0-3-* => 0.0.0, 3, g53a0111
                     $db_code_version_arr = $db_str_array[0];
                     $db_code_version_commit_num = $db_str_array[1];
+
+                    $sensor_vibration_threshold_normal=$row['sensor_vibration_threshold_normal'];
 
                     if($debug==1)
                     {

@@ -53,4 +53,8 @@ $db_user="id11067136_eews";
 $db_pwd ="r@A7kLH8TtA4NFB";
 $db_host="localhost";
 
+// for telegram bot
+$sensor_vibration_threshold_normal=100.0;
+//SELECT `sensor_vibration_threshold_normal` FROM `device_config` WHERE `config_id`=0
+
 ?>
