@@ -1,9 +1,8 @@
 <?php
-
 include "./variables.php";
-
 header('Content-Type: application/json');
- 
+
+//
 
 if(!empty($_SERVER['QUERY_STRING']))
 {

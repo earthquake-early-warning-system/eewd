@@ -2,6 +2,11 @@
 
 include "./variables.php";
 
+header('Content-Type: application/json');
+
+include "./telegram_bot.php";
+
+
 //session_start();
 
 // if(!isset($_SESSION["last_millis_server"]))
@@ -21,9 +26,6 @@ include "./variables.php";
 // {
 // 	//echo "lmi ".$_SESSION["last_millis_iot"]." ";
 // }
-
-header('Content-Type: application/json');
- 
  
 //echo date("Y-m-d H:i:s") ;//(new DateTime("now", new DateTimeZone("America/New_York")) - $date_last);
  
@@ -204,16 +206,16 @@ if ($result) {
 
 	include "get_config.php";
 
-	function send($message)
-	{
-		$text = trim($message);
+	// function send($message) // multiple defs
+	// {
+	// 	$text = trim($message);
 
-		if (strlen(trim($text)) > 0) {
-			$send = "https://api.telegram.org/bot944311541:AAEVwABoc7lVTDv4XkdF7kGhcCkzPS2q3A0/sendmessage?parse_mode=html&chat_id=-281731305&text=" . urlencode($text);
-			file_get_contents($send);  
-		}
+	// 	if (strlen(trim($text)) > 0) {
+	// 		$send = "https://api.telegram.org/bot944311541:AAEVwABoc7lVTDv4XkdF7kGhcCkzPS2q3A0/sendmessage?parse_mode=html&chat_id=-281731305&text=" . urlencode($text);
+	// 		file_get_contents($send);  
+	// 	}
 
-	}
+	// }
 
 	if($debug==1)
 	{
@@ -222,7 +224,7 @@ if ($result) {
 
 	if($sensor_vibration_threshold_normal<=(float)$accel_dB)
 	{
-		send("TEST\n\nEarthquake detected.\nThe magnitude is ".number_format((float)$accel_dB,3,'.','')." dB of vibration.\nMin threshold is ".number_format($sensor_vibration_threshold_normal,3,'.',''). " dB." );
+		telegram_bot_send("TEST\n\nEarthquake detected.\nThe magnitude is ".number_format((float)$accel_dB,3,'.','')." dB of vibration.\nMin threshold is ".number_format($sensor_vibration_threshold_normal,3,'.',''). " dB.",  'test' );
 	}
 
 	//$content = ob_get_contents();
@@ -243,4 +245,3 @@ if ($result) {
 //$DBH = null;
   
 ?>
-
