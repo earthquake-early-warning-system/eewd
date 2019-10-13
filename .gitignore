@@ -744,3 +744,4 @@ otherfiles/iot_logger_php_server/imgs/logo.kra~
 .pio/build/esp01/lib47c/ESPAsyncTCP/SyncClient.cpp.o
 .pio/build/esp01/lib47c/ESPAsyncTCP/tcp_axtls.c.o
 .pio/build/esp01/src/jumpers.cpp.o
+otherfiles/iot_logger_php_server/conf_telegram_bot.php

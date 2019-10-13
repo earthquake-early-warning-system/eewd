@@ -48,9 +48,9 @@ $device_id = -1;
 $debug=0;
 
 // database credentials
-$db_name="id11067136_eews";
-$db_user="id11067136_eews";
-$db_pwd ="r@A7kLH8TtA4NFB";
+$db_name="id11207749_eews";//"id11067136_eews";
+$db_user="id11207749_eews";
+$db_pwd ="MrnbnyAQ3M@rdBk";
 $db_host="localhost";
 
 // for telegram bot

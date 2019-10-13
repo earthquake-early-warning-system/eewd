@@ -224,7 +224,7 @@ if ($result) {
 
 	if($sensor_vibration_threshold_normal<=(float)$accel_dB)
 	{
-		telegram_bot_send("TEST\n\nEarthquake detected.\nThe magnitude is ".number_format((float)$accel_dB,3,'.','')." dB of vibration.\nMin threshold is ".number_format($sensor_vibration_threshold_normal,3,'.',''). " dB.",  'test' );
+		telegram_bot_send("TEST\n\nEarthquake detected.\nby Device$device_id\nThe magnitude is ".number_format((float)$accel_dB,3,'.','')." dB of vibration.\nMin threshold is ".number_format($sensor_vibration_threshold_normal,3,'.',''). " dB.",  'test' );
 	}
 
 	//$content = ob_get_contents();
