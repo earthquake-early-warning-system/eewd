@@ -187,6 +187,17 @@ void setup()
     syslog_warn(getPrintBuffer());
   }
 
+  // Set default
+  ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+
+    Device_config *config = config_lstnr->getDeviceConfigPtr();
+
+    // As per config0
+    config->sensor_vibration_threshold_normal[0] = 0.1;
+    config->sensor_vibration_threshold_alert[0] = 1.0;
+    config->sensor_vibration_threshold_warning[0] = 3.0;
+    config->sensor_vibration_threshold_critical[0] = 5.0;
+
   //sendDeviceId(); // To be worked on insert_data.php file for this. t can create a table automatically if not existing
 
   // timer1_attachInterrupt(onTimerISR);
@@ -232,7 +243,7 @@ void loop()
 
   double Irms = 0, Irms_filtered = 0;
   float temp = 0, temp_filtered = 0; // readTemp();
-  float acc = 0, acc_filtered = 0;
+  float acc = 0, acc_filtered = 0, acc_freq=0.0;
 
   acc = 0;
 
@@ -286,7 +297,7 @@ void loop()
       snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "No device config found. Synching...");
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
-      has_config_received = setup_php_server();
+      has_config_received = true; //setup_php_server();
       //delay(1000);
       return;
     }
@@ -307,19 +318,19 @@ void loop()
   if (false == whether_in_offline_mode)
   {
 
-    bool config_proc_st = processConfig();
-    if (config_proc_st == true)
-    {
-      delay(0);
+    // bool config_proc_st = processConfig();
+    // if (config_proc_st == true)
+    // {
+    //   delay(0);
 
-      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "code updated resetting...");
-      Serial.println(getPrintBuffer());
-      syslog_debug(getPrintBuffer());
+    //   snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "code updated resetting...");
+    //   Serial.println(getPrintBuffer());
+    //   syslog_debug(getPrintBuffer());
 
-      delay(10);
+    //   delay(10);
 
-      ESP.reset();
-    }
+    //   ESP.reset();
+    // }
   }
 
   ts = millis();
@@ -335,6 +346,7 @@ void loop()
 
   temp = mpu_getTemp();
   acc = mpu_getAccelFftMag();
+  acc_freq = mpu_getAccelFreq();
   temp_filtered = mpu_getTempFiltered();
   acc_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
 #endif
@@ -489,7 +501,13 @@ void loop()
         first_data_must_be_sent = false;
         checkForcedDataSendTime = 0; 
         sr++;
-        bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+
+        bool status_server = loop_pb_server(
+          sr, millis()/1000, 
+          acc_freq, acc_filtered,
+          temp_filtered, Irms_filtered
+        );
+        //bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
 
         if(status_server==false)
         {

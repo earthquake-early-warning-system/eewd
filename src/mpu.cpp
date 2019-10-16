@@ -74,7 +74,7 @@ elapsedMillis elapsedTime, elapsed_time;
 void setup_mpu();
 void loop_mpu();
 
-float Am_mpu = 0.0, temp_mpu = 0.0, acc_fft_magnitude_mpu = 0.0, acc_fft_magnitude_filtered_mpu = 0.0, acc_fft_magnitude_double_filtered_mpu = 0.0, temp_filtered_mpu = 0.0;
+float Am_mpu = 0.0, temp_mpu = 0.0, acc_fft_magnitude_mpu = 0.0, acc_fft_magnitude_filtered_mpu = 0.0, acc_fft_freq = 0.0, acc_fft_magnitude_double_filtered_mpu = 0.0, temp_filtered_mpu = 0.0;
 
 float mpu_getAccelMag()
 {
@@ -117,6 +117,11 @@ float mpu_getAccelTwiceFftMagFiltered()
   return acc_fft_magnitude_double_filtered_mpu;
 } 
 
+float mpu_getAccelFreq()
+{
+  return acc_fft_freq;
+}
+
 float mpu_getTemp()
 {
   return temp_mpu;
@@ -126,6 +131,7 @@ float mpu_getTempFiltered()
 {
   return temp_filtered_mpu;
 }
+
 
 unsigned long timer_mpu = 0, timer_micros_mpu = 0;
 unsigned long time_profile_mpu = 0;
@@ -239,8 +245,11 @@ void mpu_loop()
     double v;
     FFT_mpu.MajorPeak(vReal_mpu, samples_mpu, samplingFrequency, &x, &v);
 
+    
+
     valid_frequency_mpu = 0.0;
     valid_frequency_mpu = (int)(v / mag_multiflier) < (int)0.25 ? valid_frequency_mpu : x; // it should be more than 1dB.
+    acc_fft_freq = valid_frequency_mpu;
 
     acc_fft_magnitude_mpu = ((v)); // for external use keeping
     acc_fft_magnitude_mpu = getLogScale(acc_fft_magnitude_mpu);

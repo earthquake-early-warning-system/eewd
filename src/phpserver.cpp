@@ -15,6 +15,8 @@
 #include <WiFiClient.h>
 
 #include "config.h"
+
+#include "pushboax_conf.h"
  
 
 JsonStreamingParser json_parser;
@@ -498,7 +500,7 @@ bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_
 {
     //WiFiClient client;
 
-    HTTPClient http;
+    //HTTPClient http;
 
     php_sr_ser = _php_sr;
     php_uptm = _php_uptm;
@@ -508,7 +510,7 @@ bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_
     php_current_r = _php_current_r;
     php_accel_f = _php_accel_f;
     php_accel_r = _php_accel_r;
-
+ 
     String query_str = "sr=" + String(php_sr_ser) + "&dt=0" + "&time=0000-00-00T00:00:00" + "&uptm=" + String(php_uptm) + "&temp_filter=" + String(php_tmp_f) + "&temp_raw=" + String(php_tmp_r) + "&curr_filter=" + String(php_current_f) + "&curr_raw=" + String(php_current_r) + "&accel_filter=" + String(php_accel_f) + "&accel_raw=" + String(php_accel_r) 
     + "&device_code_type=" + String(DEVICE_DEVELOPMENT_TYPE) 
     + "&device_code_version=" + String(_VER_) 
@@ -516,8 +518,46 @@ bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_
     + "&config_type=s" // long or short
     + "&device_id="+String(device_config->device_id[0]);
     // crashing Here  => //device_id_" + String(getDeviceIDstr());
-
+ 
     return sendDataToServer(query_str);
+}
+
+bool loop_pb_server(unsigned long _pb_sr
+, float _pb_UPTIME_SEC, float _pb_vib_freq, float _pb_vib_amp
+, float _pb_temp, float _pb_curr)
+{
+    
+    bool status = false;
+    String query_str_pushbox=F1+String(_pb_sr)+
+    F2+String(millis()/1000)+
+    F3+String(_pb_vib_freq)+
+    F4+String(_pb_vib_amp)+
+    F5+String(_pb_temp)+
+    F6+String(_pb_curr); 
+
+    http_wificlient.setTimeout(1000); 
+
+    if(http_wificlient.connect(PUSHBOX_SERVER, 80)) 
+    { 
+        String complete_msg = "GET "+String(PUSHBOX_URL)+String(PUSHBOX_DEVID)+query_str_pushbox+" HTTP/1.1\r\nHost: "
+        +String(PUSHBOX_SERVER)+"\r\nUser-Agent: Arduino\r\n\r\n";
+//
+        http_wificlient.print(complete_msg);
+
+        sprintf(print_buffer, complete_msg.c_str(), complete_msg.length());
+        Serial.println();
+        Serial.println(print_buffer);
+        syslog_info(print_buffer);
+
+        status = true;
+       
+    }
+    else
+    {
+        
+    }
+    
+
 }
 
 bool updateCodeUpdateStatus(void)
