@@ -24,7 +24,8 @@ extern "C"
 const char *HOST_NAME = "remotedebug-air_conditioner_energy";
 
 elapsedSeconds checkMPUStatus;
-elapsedSeconds checkTelnetTime, checkPrintTime, checkForcedDataSendTime;
+elapsedSeconds checkTelnetTime, checkPrintTime;
+elapsedMinutes checkForcedDataSendTime;
 elapsedMillis checkThingSpeakTime;
 //elapsedMillis check_notification_update_time;
 unsigned long last_time_thingspoke, last_time_telnet_talked;
@@ -493,7 +494,7 @@ void loop()
     {
       notifier_setNotifierState(NOTIFIER_STATES::_1_LED_WIFI_CONNECTED);
 
-      bool force_data_send = checkForcedDataSendTime >= force_data_send_duration_seconds; // 15 minutes
+      bool force_data_send = checkForcedDataSendTime >= force_data_send_duration_minutes; // 30 minutes
       static bool first_data_must_be_sent = true;
 
       if((high_vibration_sensed==true) || (force_data_send==true) || (first_data_must_be_sent==true))

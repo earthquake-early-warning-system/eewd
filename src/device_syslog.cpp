@@ -42,11 +42,11 @@ String getDeviceIdOrMac() // incase of 0 take mac
 
 void syslog_debug(char *msg)
 {
-    logger.debug((char *)getDeviceIdOrMac().c_str(), msg);
+    logger.debug(PUSHBOX_DEVID, msg);
 }
-void syslog_info(char *msg) { logger.info((char *)getDeviceIdOrMac().c_str(), msg); }
-void syslog_warn(char *msg) { logger.warn((char *)getDeviceIdOrMac().c_str(), msg); }
-void syslog_error(char *msg) { logger.error((char *)getDeviceIdOrMac().c_str(), msg); }
+void syslog_info(char *msg) { logger.info(PUSHBOX_DEVID, msg); }
+void syslog_warn(char *msg) { logger.warn(PUSHBOX_DEVID, msg); }
+void syslog_error(char *msg) { logger.error(PUSHBOX_DEVID, msg); }
 
 // void loop() {
 //   logger..debug("running loop");
