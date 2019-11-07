@@ -37,6 +37,12 @@ if ($result = mysqli_query($conn,$sqlQuery))
             //print_r($devices);
 
             $device_id = $row['Device_id']; // loop through all the devices
+
+            if($device_id==1)
+            {
+                continue;
+            }
+
             $sqlQuery = "SELECT `time` FROM `device".$device_id."` ORDER BY `data_id` DESC LIMIT 1" ; //`time` DESC LIMIT 1";
             $data = array();
             

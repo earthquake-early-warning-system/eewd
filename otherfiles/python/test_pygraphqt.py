@@ -9,7 +9,8 @@ import numpy as np
 import socket
 
 
-UDP_IP = "10.42.0.1"
+UDP_IP = "192.168.43.71"
+#"10.42.0.1"
 UDP_PORT = 12321
 
 app = QtGui.QApplication(['eewd'])

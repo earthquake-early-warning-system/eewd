@@ -38,7 +38,7 @@ void mpu_loop();
 
 bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_temp_f, float _php_temp_r, float _php_current_f, float _php_current_r, float _php_accel_f, float _php_accel_r);
 bool loop_pb_server(unsigned long _pb_sr
-, float _pb_UPTIME_SEC, float _pb_vib_freq, float _pb_vib_amp
+, float _pb_UPTIME_SEC, float _pb_vib_freq, float _pb_vib_amp, float _pb_vib_dbl_amp
 , float _pb_temp, float _pb_curr);
 void close_all_connections();
 

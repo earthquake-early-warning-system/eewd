@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EEWD Device selection | (eews) Early Earthquake Warning System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script>
+        function redirect() {
+            window.location = document.getElementById('selectName').value;
+        }
+    </script>
+
+</head>
+
+<body>
+    <div align='center'>
+        <select id="selectName" onchange="redirect()">
+        <option value="index.html">Select a device</option>
+        <option value="./devices/index_device1.html">Device 1 EEWD</option>
+        <option value="./devices/index_device3.html">Device 3 EEWD</option>
+    </select>
+    </div>
+</body>
+
+</html>

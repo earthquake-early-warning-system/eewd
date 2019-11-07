@@ -262,6 +262,7 @@ void mpu_loop()
     acc_fft_magnitude_double_filtered_mpu = samples_acc_mpu_fltr.getMax();
     acc_fft_magnitude_filtered_mpu = acc_fft_magnitude_filtered_mpu / mag_multiflier;
     acc_fft_magnitude_double_filtered_mpu = acc_fft_magnitude_double_filtered_mpu / mag_multiflier;
+    acc_fft_magnitude_filtered_mpu=samples_acc_mpu.getMax() / mag_multiflier;
 
     if (has_offset_calculate == false)
     {

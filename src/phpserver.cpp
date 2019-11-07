@@ -523,17 +523,18 @@ bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_
 }
 
 bool loop_pb_server(unsigned long _pb_sr
-, float _pb_UPTIME_SEC, float _pb_vib_freq, float _pb_vib_amp
+, float _pb_UPTIME_SEC, float _pb_vib_freq, float _pb_vib_amp, float _pb_vib_dbl_amp
 , float _pb_temp, float _pb_curr)
 {
     
     bool status = false;
     String query_str_pushbox=F1+String(_pb_sr)+
     F2+String(millis()/1000)+
-    F3+String(_pb_vib_freq)+
-    F4+String(_pb_vib_amp)+
+    F3+String(_pb_vib_freq)+ 
+    F4+String(_pb_vib_dbl_amp)+
     F5+String(_pb_temp)+
-    F6+String(_pb_curr); 
+    //F6+String(_pb_curr)+
+    F6+String(_pb_vib_amp); 
 
     http_wificlient.setTimeout(1000); 
 

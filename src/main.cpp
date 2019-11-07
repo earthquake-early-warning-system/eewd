@@ -244,7 +244,7 @@ void loop()
 
   double Irms = 0, Irms_filtered = 0;
   float temp = 0, temp_filtered = 0; // readTemp();
-  float acc = 0, acc_filtered = 0, acc_freq=0.0;
+  float acc = 0, acc_filtered = 0 , acc_dbl_filtered = 0, acc_freq=0.0;
 
   acc = 0;
 
@@ -349,7 +349,8 @@ void loop()
   acc = mpu_getAccelFftMag();
   acc_freq = mpu_getAccelFreq();
   temp_filtered = mpu_getTempFiltered();
-  acc_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
+  acc_dbl_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
+  acc_filtered = mpu_getAccelFftMagFiltered(); 
 #endif
 
 #if (CURRENT_SUB_DEVICE == ENABLED)
@@ -363,18 +364,18 @@ void loop()
   //processConfig();
 
   // config fixed
-  if (true == whether_in_offline_mode)
-  {
-    ConfigListener *config_lstnr = getJsonConfigListenerPtr();
+  // if (true == whether_in_offline_mode)
+  // {
+  //   ConfigListener *config_lstnr = getJsonConfigListenerPtr();
 
-    Device_config *config = config_lstnr->getDeviceConfigPtr();
+  //   Device_config *config = config_lstnr->getDeviceConfigPtr();
 
-    // As per config0
-    config->sensor_vibration_threshold_normal[0] = 0.1;
-    config->sensor_vibration_threshold_alert[0] = 1.0;
-    config->sensor_vibration_threshold_warning[0] = 3.0;
-    config->sensor_vibration_threshold_critical[0] = 5.0;
-  }
+  //   // As per config0
+  //   config->sensor_vibration_threshold_normal[0] = 0.1;
+  //   config->sensor_vibration_threshold_alert[0] = 1.0;
+  //   config->sensor_vibration_threshold_warning[0] = 3.0;
+  //   config->sensor_vibration_threshold_critical[0] = 5.0;
+  // }
 
   //if (check_sensor_vibration_time > sensor_vibration_update_duration)
   {
@@ -384,7 +385,7 @@ void loop()
 
     Device_config *config = config_lstnr->getDeviceConfigPtr();
 
-    if(acc_filtered > worth_data_sending_sensor_threshold )
+    if(acc_dbl_filtered > worth_data_sending_sensor_threshold )
     {
       high_vibration_sensed = true;
     }
@@ -394,27 +395,27 @@ void loop()
     }
     
 
-    if (acc_filtered < config->sensor_vibration_threshold_normal[0])
+    if (acc_dbl_filtered < config->sensor_vibration_threshold_normal[0])
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
     }
 
-    if ((acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < config->sensor_vibration_threshold_alert[0]))
+    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_dbl_filtered < config->sensor_vibration_threshold_alert[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
     }
 
-    if ((acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0]))
+    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_dbl_filtered < config->sensor_vibration_threshold_warning[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
     }
 
-    if ((acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0]))
+    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_dbl_filtered < config->sensor_vibration_threshold_critical[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
     }
 
-    if ((acc_filtered > config->sensor_vibration_threshold_critical[0]))
+    if ((acc_dbl_filtered > config->sensor_vibration_threshold_critical[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
     }
@@ -422,7 +423,7 @@ void loop()
 
   notifier_ledNotifierLoop();
 
-  // Irms, Irms_filtered, temp, temp_filtered, acc, acc_filtered
+  // Irms, Irms_filtered, temp, temp_filtered, acc, acc_dbl_filtered
 
   ts = millis() - ts;
   dt_loop = micros() - dt_loop;
@@ -505,10 +506,10 @@ void loop()
 
         bool status_server = loop_pb_server(
           sr, millis()/1000, 
-          acc_freq, acc_filtered,
+          acc_freq, acc_filtered, acc_dbl_filtered,
           temp_filtered, Irms_filtered
         );
-        //bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_filtered, acc);
+        //bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_dbl_filtered, acc);
 
         if(status_server==false)
         {
