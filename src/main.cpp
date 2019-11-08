@@ -194,10 +194,18 @@ void setup()
     Device_config *config = config_lstnr->getDeviceConfigPtr();
 
     // As per config0
-    config->sensor_vibration_threshold_normal[0] = 0.1;
-    config->sensor_vibration_threshold_alert[0] = 1.0;
-    config->sensor_vibration_threshold_warning[0] = 3.0;
-    config->sensor_vibration_threshold_critical[0] = 5.0;
+    /*
+    config.h
+
+    const float sensor_vibration_threshold_normal = 0.4;
+    const float sensor_vibration_threshold_alert = 0.1;
+    const float sensor_vibration_threshold_warning = 1.0;
+    const float sensor_vibration_threshold_critical = 3.0;
+    */
+    config->sensor_vibration_threshold_normal[0] = default_config__sensor_vibration_threshold_normal;
+    config->sensor_vibration_threshold_alert[0] = default_config__sensor_vibration_threshold_alert;
+    config->sensor_vibration_threshold_warning[0] = default_config__sensor_vibration_threshold_warning;
+    config->sensor_vibration_threshold_critical[0] = default_config__sensor_vibration_threshold_critical;
 
   //sendDeviceId(); // To be worked on insert_data.php file for this. t can create a table automatically if not existing
 

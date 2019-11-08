@@ -575,7 +575,9 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 		case LED_NOTIFIER_SENSOR_STATE__NOTIFY :
 			ledState(LED_ID_YELLOW, 2.0);  
 			ledState(LED_ID_RED, 0);
-			ledState(BUZZER_ID_BUZZ, 0.5);
+			//ledState(BUZZER_ID_BUZZ, 0.5);
+			ledState(BUZZER_ID_BUZZ, 0.00000000001); // No need to keep it on
+
 
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 

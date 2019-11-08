@@ -411,6 +411,12 @@ const int force_data_send_duration_minutes = 20; // 15 minutes
 
 const float worth_data_sending_sensor_threshold = 0.06;
 
+const float default_config__sensor_vibration_threshold_normal = 0.4;
+const float default_config__sensor_vibration_threshold_alert = 0.2;
+const float default_config__sensor_vibration_threshold_warning = 1.0;
+const float default_config__sensor_vibration_threshold_critical = 3.0;
+
+
 // const char *apiWritekey = "U6208ODGB0Q9SKJG";
 // const char *ssid = WIFISSID;     //"JioFi3_3FA858";
 // const char *password = PASSWORD; //"mnajk1h6tz" ;
