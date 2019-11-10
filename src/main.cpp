@@ -25,7 +25,7 @@ const char *HOST_NAME = "remotedebug-air_conditioner_energy";
 
 elapsedSeconds checkMPUStatus;
 elapsedSeconds checkTelnetTime, checkPrintTime;
-elapsedMinutes checkForcedDataSendTime;
+elapsedMinutes checkForcedDataSendTime, safe_mode_timeout_ell;
 elapsedMillis checkThingSpeakTime;
 //elapsedMillis check_notification_update_time;
 unsigned long last_time_thingspoke, last_time_telnet_talked;
@@ -289,7 +289,17 @@ void loop()
 
   if (is_safe_mode_active == true)
   {
+    bool whether_safe_mode_timed_out = safe_mode_timeout_ell >= safe_mode_time_out; // 30 minutes
 
+    if(whether_safe_mode_timed_out==true)
+    {
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Safe mode timeout. Resetting...");
+      Serial.println(getPrintBuffer());
+      syslog_debug(getPrintBuffer());
+      delay(250);
+      ESP.reset();
+    }  
+    
     return;
   }
 

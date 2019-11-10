@@ -406,6 +406,7 @@ _5_BUZZER_SENSOR_EMERGENCY // 1000 HZ SOUND with 2 HZ on off
 #define CURRENT_SUB_DEVICE (DISABLED)
 #define VIBRATION_SUB_DEVICE (ENABLED)
 
+const int safe_mode_time_out = 5; // minutes
 const int notification_update_duration = 15000;
 const int force_data_send_duration_minutes = 20; // 15 minutes
 
