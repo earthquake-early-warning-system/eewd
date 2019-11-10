@@ -293,7 +293,7 @@ void loop()
 
     if(whether_safe_mode_timed_out==true)
     {
-      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Safe mode timeout. Resetting...");
+      snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "Safe mode timeout. \n Version %s \n Resetting...", _VER_);
       Serial.println(getPrintBuffer());
       syslog_debug(getPrintBuffer());
       delay(250);
