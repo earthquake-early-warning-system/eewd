@@ -374,7 +374,7 @@ _2_LED_SERVER_DATA_SENT, // OR OFFLINE MODE // BLUE OFF OR 5 SEC BLINK //
 //_2_LED_SERVER_DATA_RESPONSE_ERROR, // OR OFFLINE MODE // BLUE OFF OR 5 SEC BLINK // 
 
 _3_LED_SENSOR_OK, //  OFF OR 5 TO 10 SEC BLINK
-_3_LED_SENSOR_NOTIFY, // 1 HZ BLINK YELLOW
+_3_LED_SENSOR_NOTIFY, // 1 HZ BLINK YELLOW // This is not existing as state in config
 _3_LED_SENSOR_ALERT, // 2 HZ BLINK YELLOW
 
 _4_LED_SENSOR_WARN, // 5 HZ YELLOW BLINK AND 1 HZ RED BLINK
@@ -384,7 +384,7 @@ _4_LED_SENSOR_CRITICAL, // 10 HZ YELLOW BLINK AND 2 HZ RED BLINK
 
 // Following are for diagnosis only
 _5_BUZZER_SENSOR_OK, // OFF
-_5_BUZZER_SENSOR_NOTIFY, // 100 HZ SOUND with 1 HZ on off 
+_5_BUZZER_SENSOR_NOTIFY, // 100 HZ SOUND with 1 HZ on off  // This is not existing as state in config
 _5_BUZZER_SENSOR_ALERT, // 200 HZ SOUND with 1 HZ on off
 _5_BUZZER_SENSOR_WARN, // 500 HZ SOUND with 2 HZ on off
 _5_BUZZER_SENSOR_EMERGENCY // 1000 HZ SOUND with 2 HZ on off
@@ -413,6 +413,7 @@ const int force_data_send_duration_minutes = 20; // 15 minutes
 const float worth_data_sending_sensor_threshold = 0.06;
 
 const float default_config__sensor_vibration_threshold_normal = 0.04;
+const float default_config__sensor_vibration_threshold_notify = 0.1;// This is not existing as state in config
 const float default_config__sensor_vibration_threshold_alert = 0.2;
 const float default_config__sensor_vibration_threshold_warning = 1.0;
 const float default_config__sensor_vibration_threshold_critical = 3.0;

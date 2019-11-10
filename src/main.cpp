@@ -418,7 +418,13 @@ void loop()
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
     }
 
-    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_dbl_filtered < config->sensor_vibration_threshold_alert[0]))
+    // This is not existing as state in config
+    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_dbl_filtered < default_config__sensor_vibration_threshold_notify))
+    {
+      notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_NOTIFY);
+    }
+
+    if ((acc_dbl_filtered >= default_config__sensor_vibration_threshold_notify) && (acc_dbl_filtered < config->sensor_vibration_threshold_alert[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
     }
