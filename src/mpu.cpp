@@ -63,11 +63,12 @@ double vImag_mpu[samples_mpu];
 
 I2CScanner scanner_mpu;
 
-#define OFFSET_COUNT (10)
-float mpu_offset = 0.0f;
-bool has_offset_calculate = false;
-int mpu_offset_sample_count = 0;
-float mpu_offset_samples[OFFSET_COUNT] = {0.0f};
+#define OFFSET_COUNT (100)
+bool has_data_filled = false;
+float mpu_raw_offset = 0.0f,  mpu_offset = 0.0f;
+bool  has_raw_offset_calculate = false, has_offset_calculate = false;
+int mpu_raw_offset_sample_count = 0, mpu_offset_sample_count = 0;
+float mpu_raw_offset_samples[OFFSET_COUNT] = {0.0f}, mpu_offset_samples[OFFSET_COUNT] = {0.0f};
 
 elapsedMillis elapsedTime, elapsed_time;
 
@@ -156,19 +157,8 @@ bool mpu_setup()
 
   mpu_offset = 0.0f;
 
-  for (int i = 0; i < samples_mpu; i++)
-  {
-    loop_mpu();
-    float am_ft 
-    #ifdef USE_K_FILTER
-    = kFilter.updateEstimate(Am_mpu * mag_multiflier);
-    #else
-    = Am_mpu * mag_multiflier;
-    #endif
-    buffer.push(am_ft);
-    vReal_mpu[i % samples_mpu] = am_ft;
-    vImag_mpu[i % samples_mpu] = 0.0;
-  }
+  
+
 
   return status;
 }
@@ -179,16 +169,68 @@ int acc_vreal_index_mpu = 0;
 
 double valid_frequency_mpu = 0.0;
 
+int data_fill_index=0;
+
 void mpu_loop()
 {
   //mpu6050.update();
+
+  if(has_raw_offset_calculate==false)
+  { 
+    if (micros() - timer_micros_mpu > sampling_duration_us)
+    {
+      timer_micros_mpu = micros();
+      time_profile_mpu = micros();
+      loop_mpu();
+      return; // offset be calculated
+    }
+  }
+
+//
+if(has_data_filled==false)
+{
+  if (data_fill_index < samples_mpu)
+  {
+    if (micros() - timer_micros_mpu > sampling_duration_us)
+    {
+      timer_micros_mpu = micros();
+      time_profile_mpu = micros();
+      loop_mpu();
+
+      data_fill_index++;
+    
+      float am_ft 
+      #ifdef USE_K_FILTER
+      = kFilter.updateEstimate(Am_mpu * mag_multiflier);
+      #else
+      = Am_mpu * mag_multiflier;
+      #endif
+
+      buffer.push(am_ft);
+      vReal_mpu[data_fill_index % samples_mpu] = am_ft;
+      vImag_mpu[data_fill_index % samples_mpu] = 0.0;
+
+      return; // let data be filled has_data_filled
+
+    }
+  }
+  else
+  {
+    has_data_filled = true;
+    sprintf(print_buffer, "| mpu | data filled %d",data_fill_index);
+    Serial.println(print_buffer);
+
+    syslog_debug(print_buffer);
+  }
+}
+  
 
   if (micros() - timer_micros_mpu > sampling_duration_us)
   {
     timer_micros_mpu = micros();
     time_profile_mpu = micros();
     loop_mpu();
-    
+ 
     float am_ft 
     #ifdef USE_K_FILTER
     = kFilter.updateEstimate(Am_mpu * mag_multiflier);
@@ -229,6 +271,8 @@ void mpu_loop()
     //{
 
     timer_mpu = millis();
+
+   
 
     dsr_mpu = sr_mpu - lsr_mpu;                                  /* Sampling frequency */
     double samplingFrequency = 1000000.0 / sampling_duration_us; // (double)dsr_mpu/((double)time_division/1000.0); // change to second
@@ -291,7 +335,13 @@ void mpu_loop()
 
       acc_fft_magnitude_mpu = 0.0f;
       acc_fft_magnitude_filtered_mpu = 0.0f;
-    }
+     }
+    // else
+    // {
+    //   acc_fft_magnitude_mpu = 0.0f;
+    //   acc_fft_magnitude_filtered_mpu = 0.0f;
+    // }
+    
 
     samples_temp_mpu.in((int)((float)temp_mpu * 1000.0));        // x1000 for magnitude
     temp_filtered_mpu = ((float)samples_temp_mpu.out()) * 0.001; // / by 1000
@@ -433,12 +483,40 @@ void loop_mpu()
   float Ay = (float)AcY * 2.0 / 32768.0;
   float Az = (float)AcZ * 2.0 / 32768.0;
 
-  Am_mpu = sqrtf(Ax * Ax + Ay * Ay + Az * Az);
+  Am_mpu = sqrtf(Ax * Ax + Ay * Ay + Az * Az)-mpu_raw_offset;
+
 
   if (isnan(Am_mpu))
   {
     Am_mpu = 0.0;
   }
+
+
+  if (has_raw_offset_calculate == false)
+    {
+      mpu_raw_offset_samples[mpu_raw_offset_sample_count % OFFSET_COUNT] = Am_mpu;
+      mpu_raw_offset_sample_count++;
+
+      if (mpu_raw_offset_sample_count == OFFSET_COUNT)
+      {
+        float offset_local = 0;
+        for (int i = 0; i < OFFSET_COUNT; i++)
+        {
+          offset_local += mpu_raw_offset_samples[i];
+        }
+
+        offset_local /= OFFSET_COUNT;
+
+        mpu_raw_offset = offset_local;
+
+        has_raw_offset_calculate = true;
+
+        sprintf(print_buffer, "| mpu | raw offset %f", mpu_raw_offset);
+        Serial.println(print_buffer);
+
+        syslog_debug(print_buffer);
+      } 
+    }
 
   temp_mpu = (Tmp / 340.00 + 36.53);
   //Serial.print("Acm = "); Serial.print(Am, 4);

@@ -568,7 +568,7 @@ void loop()
 
       
 
-      snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Wifi connection OK - IP %s", WiFi.localIP().toString().c_str());
+      snprintf(print_buffer, MAX_PRINT_BUFFER_SIZE, "Wifi connection OK - IP %s Version %s", WiFi.localIP().toString().c_str(), _VER_);
       Serial.println();
       Serial.println(print_buffer);
       syslog_info(print_buffer);

@@ -580,6 +580,8 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 
 
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
+			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, LOW);// active high 'OFF'
+
 
 			snprintf_P(getPrintBuffer(), 15, "SENSE NOTIFY @");
 			syslog_info(getPrintBuffer());
