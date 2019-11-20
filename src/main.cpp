@@ -413,33 +413,33 @@ void loop()
     }
     
 
-    if (acc_dbl_filtered < config->sensor_vibration_threshold_normal[0])
+    if (acc_filtered < config->sensor_vibration_threshold_normal[0])
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_OK);
     }
 
     // This is not existing as state in config
-    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_dbl_filtered < default_config__sensor_vibration_threshold_notify))
+    if ((acc_filtered >= config->sensor_vibration_threshold_normal[0]) && (acc_filtered < default_config__sensor_vibration_threshold_notify))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_NOTIFY);
     }
 
-    if ((acc_dbl_filtered >= default_config__sensor_vibration_threshold_notify) && (acc_dbl_filtered < config->sensor_vibration_threshold_alert[0]))
+    if ((acc_filtered >= default_config__sensor_vibration_threshold_notify) && (acc_filtered < config->sensor_vibration_threshold_alert[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_3_LED_SENSOR_ALERT);
     }
 
-    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_dbl_filtered < config->sensor_vibration_threshold_warning[0]))
+    if ((acc_filtered >= config->sensor_vibration_threshold_alert[0]) && (acc_filtered < config->sensor_vibration_threshold_warning[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_WARN);
     }
 
-    if ((acc_dbl_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_dbl_filtered < config->sensor_vibration_threshold_critical[0]))
+    if ((acc_filtered >= config->sensor_vibration_threshold_warning[0]) && (acc_filtered < config->sensor_vibration_threshold_critical[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_EMERGENCY);
     }
 
-    if ((acc_dbl_filtered > config->sensor_vibration_threshold_critical[0]))
+    if ((acc_filtered > config->sensor_vibration_threshold_critical[0]))
     {
       notifier_setNotifierState(NOTIFIER_STATES::_4_LED_SENSOR_CRITICAL);
     }
