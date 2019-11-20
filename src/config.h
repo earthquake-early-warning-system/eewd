@@ -412,8 +412,8 @@ const int force_data_send_duration_minutes = 20; // 15 minutes
 
 const float worth_data_sending_sensor_threshold = 0.03;
 
-const float default_config__sensor_vibration_threshold_normal = 0.04;
-const float default_config__sensor_vibration_threshold_notify = 0.1;// This is not existing as state in config
+const float default_config__sensor_vibration_threshold_normal = 0.015;
+const float default_config__sensor_vibration_threshold_notify = 0.04;// This is not existing as state in config
 const float default_config__sensor_vibration_threshold_alert = 0.2;
 const float default_config__sensor_vibration_threshold_warning = 1.0;
 const float default_config__sensor_vibration_threshold_critical = 3.0;
