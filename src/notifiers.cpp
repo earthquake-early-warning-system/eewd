@@ -3,8 +3,16 @@
 #include "config.h"
 #include "common_def.h"
 
+
+#if defined(DISPLAY_FLAVOUR_LCD)
+// void display_setup();
+#else
+
 #include <Ticker.h>
 #include <jled.h>
+
+#endif //defined(DISPLAY_FLAVOUR_LCD)
+
 
 #include "elapsedMillis.h"
 
@@ -86,6 +94,11 @@ enum LED_NOTIFIER_SENSOR_STATE
 	LED_NOTIFIER_SENSOR_STATE__CRITICAL 
 };
 
+
+#if defined(DISPLAY_FLAVOUR_LCD)
+
+#else
+
 enum BUZZER_PERIPHERAL
 { 
  BUZZER_PERIPHERAL_PIN=(D5) 
@@ -118,9 +131,6 @@ enum LED_PERIPHERAL
 #endif 
 
 
-
-
-
 enum LED_ID
 {
 	LED_ID_WHITE=(0),
@@ -131,7 +141,6 @@ enum LED_ID
 	BUZZER_ID_BUZZ=(5),
 	LED_ID_MAX=(BUZZER_ID_BUZZ+1) 
 };
-
 
 LED_WHITE_BREATHE_STATE led_white_breahe_state;
 
@@ -222,6 +231,10 @@ void ledState(LED_ID led_id, float freq, bool last_state=false)
 	}
 }
 
+
+#endif //#if defined(DISPLAY_FLAVOUR_LCD)
+
+
 bool has_notifier_setup=false;
 bool notifier_ledNotifierSetup()
 {
@@ -231,6 +244,11 @@ bool notifier_ledNotifierSetup()
 	//pinMode(D4 /* D9*/, OUTPUT);
 	//digitalWrite(D4 /* D9*/, HIGH);
 
+    #if defined(DISPLAY_FLAVOUR_LCD)
+
+	display_setup();
+
+	#else
 	pinMode(LED_PERIPHERAL_WHITE, OUTPUT);
 	digitalWrite(LED_PERIPHERAL_WHITE, HIGH);
 
@@ -257,6 +275,7 @@ bool notifier_ledNotifierSetup()
 	led_white_breahe_state = LED_WHITE_BREATHE_STATE__OFFLINE;
 	//ledState(LED_ID_WHITE, 0.1);
 
+	#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 	//Serial.println("notify setup");
 	has_notifier_setup = true;
 	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "status_notify :%d\n", has_notifier_setup);
@@ -276,6 +295,12 @@ void notifier_ledNotifierLoop()
 	{
 		return;
 	}	
+
+	#if defined(DISPLAY_FLAVOUR_LCD)
+
+
+
+	#else
 
 	if (led_white_breahe_state != LED_WHITE_BREATHE_STATE__INVALID)
 	{
@@ -300,6 +325,8 @@ void notifier_ledNotifierLoop()
 		last_state = (LED_NOTIFIER_HEARTBEAT_STATE)led_white_breahe_state; 
 		
 	}
+
+	#endif // #if defined(DISPLAY_FLAVOUR_LCD)
 }
 
 void setLedNotifierHBState(LED_NOTIFIER_HEARTBEAT_STATE _led_bh_state)
@@ -322,9 +349,12 @@ void setLedNotifierHBState(LED_NOTIFIER_HEARTBEAT_STATE _led_bh_state)
  	}
 	last_state = _led_bh_state;	
 
+	#if defined(DISPLAY_FLAVOUR_LCD)
+
+	#else
 	snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "hb notify state :%d\n", led_white_breahe_state);
     DEBUG_LOG(getPrintBuffer());
-
+	#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 /*
 
 LED_WHITE_BREATHE_STATE__OFF, // LED OFF
@@ -360,10 +390,17 @@ LED_WHITE_BREATHE_STATE__OFF, // LED OFF
 	if(LED_WHITE_BREATHE_STATE__INVALID > (LED_WHITE_BREATHE_STATE)_led_bh_state)
 	{ 
 		//ledState(LED_ID_WHITE, 0.0);  
+		#if defined(DISPLAY_FLAVOUR_LCD)
+		
+		#else
+
 		ledDetach(LED_ID_WHITE, false);
+
+		
 		led_white_breahe_state = (LED_WHITE_BREATHE_STATE)_led_bh_state;
 		snprintf_P(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "hb notify state :%d\n", led_white_breahe_state);
     	DEBUG_LOG(getPrintBuffer());
+		#endif // #if defined(DISPLAY_FLAVOUR_LCD) 
 	}
 	else
 	{
@@ -447,26 +484,47 @@ void setLedNotifierWIFIState(LED_NOTIFIER_WIFI_STATE _state)
 	switch (_state)
 	{
 		case LED_NOTIFIER_WIFI_STATE__OFFLINE :
+
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 		    ledState(LED_ID_BLUE_1, 0, true); 
 			digitalWrite(led_states[LED_ID_BLUE_1].LED_PERI, HIGH);// active low 'OFF'
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			//ledState(LED_ID_BLUE_1, 0); // No need to change earlier white led state
 			break;
 		
 		case LED_NOTIFIER_WIFI_STATE__CHECK :
-			ledState(LED_ID_BLUE_1, 2.0);  
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
+			ledState(LED_ID_BLUE_1, 2.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)  
 			break;
 
 		case LED_NOTIFIER_WIFI_STATE__CONN_FAILED :
-			ledState(LED_ID_BLUE_1, 8.0);  
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
+			ledState(LED_ID_BLUE_1, 8.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)  
 			break;
 
 		case LED_NOTIFIER_WIFI_STATE__CONFIG :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			ledState(LED_ID_BLUE_1, 4.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;			
 
 		case LED_NOTIFIER_WIFI_STATE__CONNECTED :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			ledState(LED_ID_BLUE_1, 0); 
 			digitalWrite(led_states[LED_ID_BLUE_1].LED_PERI, LOW);// active low 'OFF'
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;
 		
 		default:
@@ -500,29 +558,53 @@ void setLedNotifierServerState(LED_NOTIFIER_SERVER_STATE _state)
 	switch (_state)
 	{
 		case LED_NOTIFIER_SERVER_STATE__OFFLINE :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			//ledState(LED_ID_BLUE_2, 0); // No need to change earlier white led state
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;
 		
 		case LED_NOTIFIER_SERVER_STATE__CONNECTING :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			ledState(LED_ID_BLUE_2, 2.0);  
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;
 
 		case LED_NOTIFIER_SERVER_STATE__CONNECTED :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			ledState(LED_ID_BLUE_2, 4.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;			
 
 		case LED_NOTIFIER_SERVER_STATE__CONN_FAILD :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			ledState(LED_ID_BLUE_2, 8.0); 
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;
 
 		case LED_NOTIFIER_SERVER_STATE__DATA_SENDING :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else	
 			ledState(LED_ID_BLUE_2, 4.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			break;			
 
 		case LED_NOTIFIER_SERVER_STATE__DATA_SENT :
+
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			#else
 			ledState(LED_ID_BLUE_2, 0); 
 			digitalWrite(led_states[LED_ID_BLUE_2].LED_PERI, LOW);// active low 'OFF'
-
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 
 			break;
 				
@@ -559,6 +641,11 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 	switch (_state)
 	{
 		case LED_NOTIFIER_SENSOR_STATE__OK :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+
+			display_OK();
+
+			#else
 			ledState(LED_ID_YELLOW, 0); //  need to change earlier yellow led state
 			ledState(LED_ID_RED, 0); // need to change earlier red led state 
 			ledState(BUZZER_ID_BUZZ, 0.00000000001);
@@ -567,12 +654,16 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, LOW);// active high 'OFF'
 
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			snprintf_P(getPrintBuffer(), 15, "SENSE NORMAL @");
 			syslog_info(getPrintBuffer());
 
 			break;
 		
 		case LED_NOTIFIER_SENSOR_STATE__NOTIFY :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+			display_info();
+			#else
 			ledState(LED_ID_YELLOW, 2.0);  
 			ledState(LED_ID_RED, 0);
 			//ledState(BUZZER_ID_BUZZ, 0.5);
@@ -581,18 +672,22 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
 			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, LOW);// active high 'OFF'
-
-
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
+ 
 			snprintf_P(getPrintBuffer(), 15, "SENSE NOTIFY @");
 			syslog_info(getPrintBuffer());
 
 			break;
 
 		case LED_NOTIFIER_SENSOR_STATE__ALERT :
+            #if defined(DISPLAY_FLAVOUR_LCD)
+			display_notice();
+			#else
 			ledState(LED_ID_YELLOW, 4.0);
 			ledState(LED_ID_RED, 0);
 			ledState(BUZZER_ID_BUZZ, 1.0);
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, HIGH);// active low 'OFF'
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 
 			snprintf_P(getPrintBuffer(), 14, "SENSE ALERT @");
 			syslog_info(getPrintBuffer());
@@ -601,9 +696,13 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			break;			
 
 		case LED_NOTIFIER_SENSOR_STATE__WARN :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+			display_caution();
+			#else
 			ledState(LED_ID_YELLOW, 8.0); 
 			ledState(LED_ID_RED, 2.0); 
 			ledState(BUZZER_ID_BUZZ, 2.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 
 			snprintf_P(getPrintBuffer(), 13, "SENSE WARN @");
 			syslog_info(getPrintBuffer());
@@ -611,9 +710,13 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 			break;
 
 		case LED_NOTIFIER_SENSOR_STATE__EMERGENCY :
+			#if defined(DISPLAY_FLAVOUR_LCD)
+			display_warning();
+			#else
 			ledState(LED_ID_YELLOW, 8.0); 
 			ledState(LED_ID_RED, 4.0); 
 			ledState(BUZZER_ID_BUZZ, 4.0);
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 
 			snprintf_P(getPrintBuffer(), 18, "SENSE EMERGENCY @");
 			syslog_info(getPrintBuffer());
@@ -623,15 +726,17 @@ void setLedNotifierSensorState(LED_NOTIFIER_SENSOR_STATE _state)
 		case LED_NOTIFIER_SENSOR_STATE__CRITICAL :
 
 			// Continuous on
-					
+			#if defined(DISPLAY_FLAVOUR_LCD)
+			display_danger();
+			#else		
 			ledState(LED_ID_YELLOW, 0); //  need to change earlier yellow led state
 			ledState(LED_ID_RED, 0); // need to change earlier red led state
 			digitalWrite(led_states[BUZZER_ID_BUZZ].LED_PERI, HIGH);// active low 'OFF'
-
-
+ 
 			digitalWrite(led_states[LED_ID_YELLOW].LED_PERI, LOW);// active low 'OFF'
 			digitalWrite(led_states[LED_ID_RED].LED_PERI, LOW);// active low 'OFF'
 
+			#endif //#if defined(DISPLAY_FLAVOUR_LCD)
 			snprintf_P(getPrintBuffer(), 17, "SENSE CRITICAL @");
 			syslog_info(getPrintBuffer());
 			

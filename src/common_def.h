@@ -63,4 +63,18 @@ char* getMpuColorPtr();
 void setMpuColorPtr(char * _char_ptr);
 
 
+#if defined(DISPLAY_FLAVOUR_LCD)
+void display_setup();
+void display_loop();
+void displayPartClear();
+void display_OK();
+void display_check();
+void display_info();
+void display_notice();
+void display_caution();
+void display_warning();
+void display_danger();
+#endif //  #if defined(DISPLAY_FLAVOUR_LCD)
+
+
 #endif //COMMON_DEF_H
