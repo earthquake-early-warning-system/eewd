@@ -1,3 +1,5 @@
+#if defined(AQI_MEASURE)
+
 #include <ConfigurableSoftwareSerial.h>
 #include "CalculateAQI.h"
 #include <PMS.h>
@@ -87,3 +89,4 @@ void loop_aqi()
 }
 
  
+ #endif //#if defined(AQI_MEASURE)

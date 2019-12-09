@@ -215,6 +215,12 @@ void setup()
 
   //timer1_enable(TIM_DIV16, TIM_EDGE, TIM_SINGLE);
   //timer1_write(5000000);//1 second
+
+
+  // AQI
+  #if defined(AQI_MEASURE)
+  setup_aqi();
+  #endif
 }
 
 bool last_state = false;
@@ -370,6 +376,11 @@ void loop()
   acc_dbl_filtered = mpu_getAccelTwiceFftMagFiltered(); // mpu_getAccelFftMagFiltered
   acc_filtered = mpu_getAccelFftMagFiltered(); 
 #endif
+
+  // AQI
+  #if defined(AQI_MEASURE)
+  loop_aqi();
+  #endif
 
 #if (CURRENT_SUB_DEVICE == ENABLED)
   bool state = Irms_loop(); // It is not measuring status

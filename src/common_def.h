@@ -76,5 +76,10 @@ void display_warning();
 void display_danger();
 #endif //  #if defined(DISPLAY_FLAVOUR_LCD)
 
+#if defined(AQI_MEASURE)
+void setup_aqi();
+void loop_aqi();
+#endif //defined(AQI_MEASURE)
+
 
 #endif //COMMON_DEF_H
