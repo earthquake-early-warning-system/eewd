@@ -6,7 +6,7 @@
 #include <SPI.h>
 
   #define TFT_CS         -1 // not tested
-  #define TFT_RST        D5  
+  #define TFT_RST        -1 // D5 // As esp at boot time sending reuired reset pulse automatically. The D5 can be used for software RX purpose  
 
   #define TFT_DC         D2 //D4
   #define TFT_MOSI       D3 //D6
