@@ -18,7 +18,9 @@ SensorData sensorData;
 #define UART_STOP_BITS          2
 #define UART_PARITY             'N'
 #define UART_DATA_BITS          7
- 
+
+float aqi_value = 0;
+struct Category category;
 
 void setup_aqi()
 {
@@ -35,7 +37,8 @@ void resetSensorAvg()
     numReads: 0  
   };
 }
-void loop_aqi()
+
+float loop_aqi()
 {
   
   
@@ -79,14 +82,31 @@ void loop_aqi()
     Serial.println(cat.level);
     Serial.println(cat.color);
  
+    //
+    Serial.println();
+
+    aqi_value = averagedData.AQI;
+
+    category = cat;
+    
     resetSensorAvg();
 
-    Serial.println();
+
+    return averagedData.AQI;
   }
 
   
 
 }
 
+float getAqi()
+{ 
+  return aqi_value;
+}
+
+struct Category getCategory()
+{
+  return category;
+} 
  
  #endif //#if defined(AQI_MEASURE)

@@ -2,7 +2,7 @@
 #define COMMON_DEF_H
 
 #include "config_json_stream_parser.h"
-
+#include "CalculateAQI.h"
 
 void wifimanager_setup();
 
@@ -78,7 +78,9 @@ void display_danger();
 
 #if defined(AQI_MEASURE)
 void setup_aqi();
-void loop_aqi();
+float loop_aqi();
+float getAqi();
+struct Category getCategory();
 #endif //defined(AQI_MEASURE)
 
 
