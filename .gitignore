@@ -3626,3 +3626,18 @@ otherfiles/iot_logger_php_server/imgs/logo_60x60/.png
 .pio/build/d1_mini_eewd3/libe8a/Adafruit GFX Library/glcdfont.c.o
 .pio/build/d1_mini_eewd3/src/aqi.cpp.o
 .pio/build/d1_mini_eewd3/src/display.cpp.o
+.pio/build/d1_mini_eewd6/lib4e1/libConfigurableSoftwareSerial.a
+.pio/build/d1_mini_eewd6/lib4e1/ConfigurableSoftwareSerial/ConfigurableSoftwareSerial.cpp.o
+.pio/build/d1_mini_eewd6/lib514/libaqi.a
+.pio/build/d1_mini_eewd6/lib514/aqi/CalculateAQI.cpp.o
+.pio/build/d1_mini_eewd6/libab8/libAdafruit GFX Library@src-ac08a74c2b277f63bd79d3b6a68484c8.a
+.pio/build/d1_mini_eewd6/libab8/Adafruit GFX Library@src-ac08a74c2b277f63bd79d3b6a68484c8/Adafruit_GFX.cpp.o
+.pio/build/d1_mini_eewd6/libab8/Adafruit GFX Library@src-ac08a74c2b277f63bd79d3b6a68484c8/Adafruit_SPITFT.cpp.o
+.pio/build/d1_mini_eewd6/libab8/Adafruit GFX Library@src-ac08a74c2b277f63bd79d3b6a68484c8/glcdfont.c.o
+.pio/build/d1_mini_eewd6/libb1a/libPMS Library.a
+.pio/build/d1_mini_eewd6/libb1a/PMS Library/PMS.cpp.o
+.pio/build/d1_mini_eewd6/libc06/libAdafruit ST7735 and ST7789 Library@src-ab897fe130fb18a3c764399e7e4c0482.a
+.pio/build/d1_mini_eewd6/libc06/Adafruit ST7735 and ST7789 Library@src-ab897fe130fb18a3c764399e7e4c0482/Adafruit_ST77xx.cpp.o
+.pio/build/d1_mini_eewd6/libc06/Adafruit ST7735 and ST7789 Library@src-ab897fe130fb18a3c764399e7e4c0482/Adafruit_ST7735.cpp.o
+.pio/build/d1_mini_eewd6/libc06/Adafruit ST7735 and ST7789 Library@src-ab897fe130fb18a3c764399e7e4c0482/Adafruit_ST7789.cpp.o
+.pio/build/d1_mini_eewd6/src/aqi.cpp.o
