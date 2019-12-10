@@ -9,7 +9,7 @@
 
 
 
-ConfigurableSoftwareSerial pmsSerial(PIN_PMS_TX, PIN_PMS_RX, false, 256);
+ConfigurableSoftwareSerial pmsSerial(PIN_PMS_RX, PIN_PMS_TX, false, 256);
 PMS pms(pmsSerial);
 PMS::DATA pms_data;
 
@@ -30,6 +30,11 @@ struct Category category;
 void setup_aqi()
 {
     pmsSerial.begin(UART_BAUD);//, UART_STOP_BITS, UART_PARITY, UART_DATA_BITS);
+    
+    snprintf(getPrintBuffer(), MAX_PRINT_BUFFER_SIZE, "AQI ready");
+ 
+    Serial.println(getPrintBuffer());
+    syslog_debug(getPrintBuffer());
 }
 
 void resetSensorAvg()
