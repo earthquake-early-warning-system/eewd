@@ -17,6 +17,9 @@
 #include "config.h"
 
 #include "pushboax_conf.h"
+
+#include "CalculateAQI.h"
+
  
 
 JsonStreamingParser json_parser;
@@ -524,7 +527,13 @@ bool loop_php_server(unsigned long _php_sr, unsigned long _php_uptm, float _php_
 
 bool loop_pb_server(unsigned long _pb_sr
 , float _pb_UPTIME_SEC, float _pb_vib_freq, float _pb_vib_amp, float _pb_vib_dbl_amp
-, float _pb_temp, float _pb_curr)
+, float _pb_temp, float _pb_curr
+#if defined(AQI_MEASURE)
+,  struct SensorData *aqi_data
+#else
+
+#endif
+)
 {
     
     bool status = false;

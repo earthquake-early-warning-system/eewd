@@ -15,7 +15,7 @@
 #define FW_UPDATE_AVAILABLE (1)
 //#define FW_UPDATE_UNAVAILABLE (0)
 
-#define DISPLAY_FLAVOUR_LCD (1)
+//#define DISPLAY_FLAVOUR_LCD (1)
 
 
 static char * color_for_mpu_console;

@@ -11,6 +11,7 @@
 RemoteDebug Debug;
 
 #include "common_def.h"
+#include "CalculateAQI.h"
 
 #ifdef ESP8266
 extern "C"
@@ -228,6 +229,8 @@ unsigned long sr, ts_acc;
 
 bool high_vibration_sensed = false;
 
+//struct sensorData;
+
 void loop()
 {
   whether_in_offline_mode = jumper_offline_mode_status();
@@ -305,6 +308,8 @@ void loop()
       delay(250);
       ESP.reset();
     }  
+
+    notifier_setNotifierState(NOTIFIER_STATES::_0_NOTIFIER_CODE_ERROR);
     
     return;
   }
@@ -380,6 +385,8 @@ void loop()
   // AQI
   #if defined(AQI_MEASURE)
   loop_aqi();
+  struct SensorData * aqi_data = getAqi();
+  struct Category cat = getCategory();
   #endif
 
 #if (CURRENT_SUB_DEVICE == ENABLED)
@@ -543,6 +550,11 @@ void loop()
           sr, millis()/1000, 
           acc_freq, acc_filtered, acc_dbl_filtered,
           temp_filtered, Irms_filtered
+          #if defined(AQI_MEASURE)
+          , aqi_data
+          #else
+
+          #endif
         );
         //bool status_server = loop_php_server(sr, millis(), temp_filtered, temp, Irms_filtered, Irms, acc_dbl_filtered, acc);
 
