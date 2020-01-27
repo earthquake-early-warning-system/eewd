@@ -39,7 +39,7 @@ To get how these are done :
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/telegram-bot/api.svg?style=flat-square)]()
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/badge/Build-inprogress-yellow.svg?style=flat-square)]()
-[![Coverage Status](https://img.shields.io/badge/Coverage-0%-red.svg?style=flat-square)]()
+[![Coverage Status](https://img.shields.io/badge/Coverage-0%25-red.svg?style=flat-square)]()
 [![Total Downloads](https://img.shields.io/badge/Downloads-104-green.svg?style=flat-square)]()
 
 ------
